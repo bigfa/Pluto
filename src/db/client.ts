@@ -16,11 +16,14 @@ export type SqliteDbType = unknown;
 type NodeRequireFn = <T = unknown>(id: string) => T;
 type SqliteDatabaseCtor = new (path: string) => unknown;
 type DrizzleSqliteModule = { drizzle: (db: unknown, options: { schema: typeof schema }) => unknown };
+declare const __non_webpack_require__: NodeRequireFn | undefined;
 let sqliteClientCache: { path: string; client: { type: 'sqlite'; db: SqliteDbType; schema: typeof schema } } | null = null;
 
 function getNodeRequire(): NodeRequireFn | null {
     if (typeof process === 'undefined' || !process.versions?.node) return null;
-    return (0, eval)('require') as NodeRequireFn;
+    if (typeof __non_webpack_require__ === 'function') return __non_webpack_require__;
+    if (typeof require === 'function') return require as NodeRequireFn;
+    return null;
 }
 
 function getSqliteClient(filePath: string) {
