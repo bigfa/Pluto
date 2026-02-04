@@ -2,8 +2,10 @@ FROM node:20-bullseye AS build
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable \
+    && corepack prepare pnpm@9.15.0 --activate \
+    && pnpm install --frozen-lockfile
 
 COPY . .
 RUN npm run build
@@ -17,7 +19,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /app/package.json /app/package-lock.json ./
+COPY --from=build /app/package.json /app/pnpm-lock.yaml ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
