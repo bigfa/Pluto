@@ -3,8 +3,7 @@ FROM node:20-bullseye AS build
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
-RUN corepack enable \
-    && corepack prepare pnpm@9.15.0 --activate \
+RUN npm install -g pnpm@9.15.0 \
     && pnpm install --frozen-lockfile
 
 COPY . .
