@@ -93,6 +93,8 @@ The project includes a built-in admin panel at `/admin`. You need to configure t
 
 For a single-container deployment with SQLite and local media storage:
 
+If you want to deploy using a published Docker image, see `DEPLOY_DOCKER.md`.
+
 1. Set these environment variables:
 
 ```bash
@@ -175,6 +177,7 @@ Details:
 
 - `DEPLOY_WORKERS.md`
 - `DEPLOY_WORKERS_ZH.md`
+- Docker image deployment: `DEPLOY_DOCKER.md`
 
 ## API Docs
 

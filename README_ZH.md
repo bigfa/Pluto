@@ -53,6 +53,8 @@
 
 适合单容器部署，使用 SQLite + 本地媒体目录：
 
+如果使用已发布的 Docker 镜像部署，请参考 `DEPLOY_DOCKER_ZH.md`。
+
 1. 设置环境变量：
 
 ```bash
@@ -136,6 +138,7 @@ location /uploads/ {
 
 - `DEPLOY_WORKERS.md`
 - `DEPLOY_WORKERS_ZH.md`
+- Docker 镜像部署：`DEPLOY_DOCKER_ZH.md`
 
 ## API 文档
 
