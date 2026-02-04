@@ -27,6 +27,8 @@ export interface Env {
     MEDIA_MEDIUM_STYLE?: string;
     MEDIA_LARGE_STYLE?: string;
     R2_DOMAIN?: string;
+    MEDIA_LOCAL_DIR?: string;
+    MEDIA_LOCAL_PUBLIC_URL?: string;
 
     // UpYun
     UPYUN_BUCKET?: string;
@@ -86,6 +88,8 @@ export async function getEnv(): Promise<Env> {
             MEDIA_MEDIUM_STYLE: process.env.MEDIA_MEDIUM_STYLE,
             MEDIA_LARGE_STYLE: process.env.MEDIA_LARGE_STYLE,
             R2_DOMAIN: process.env.R2_DOMAIN,
+            MEDIA_LOCAL_DIR: process.env.MEDIA_LOCAL_DIR,
+            MEDIA_LOCAL_PUBLIC_URL: process.env.MEDIA_LOCAL_PUBLIC_URL,
             // UpYun
             UPYUN_BUCKET: process.env.UPYUN_BUCKET,
             UPYUN_OPERATOR: process.env.UPYUN_OPERATOR,

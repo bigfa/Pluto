@@ -10,6 +10,11 @@ export async function GET(request: NextRequest) {
 
     const providers = [
         {
+            value: 'local',
+            label: 'Local (Disk)',
+            available: !!(env.MEDIA_LOCAL_DIR || env.MEDIA_LOCAL_PUBLIC_URL),
+        },
+        {
             value: 'r2',
             label: 'R2',
             available: !!env.MEDIA_BUCKET,

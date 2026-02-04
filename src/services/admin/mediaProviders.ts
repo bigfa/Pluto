@@ -38,6 +38,79 @@ function arrayBufferToHex(buffer: ArrayBuffer): string {
         .join('');
 }
 
+// ---- Local (Filesystem) ----
+
+const DEFAULT_LOCAL_DIR = 'public/uploads';
+const DEFAULT_LOCAL_PUBLIC_URL = '/uploads';
+
+async function resolveLocalTarget(env: Env, key: string) {
+    const { resolve, dirname, sep } = await import('node:path');
+    const baseDir = env.MEDIA_LOCAL_DIR || DEFAULT_LOCAL_DIR;
+    const basePath = resolve(process.cwd(), baseDir);
+    const targetPath = resolve(basePath, key);
+
+    if (targetPath !== basePath && !targetPath.startsWith(`${basePath}${sep}`)) {
+        throw new Error('Invalid media key');
+    }
+
+    return { basePath, targetPath, dirname };
+}
+
+async function putLocal(
+    env: Env,
+    key: string,
+    data: ArrayBuffer | ReadableStream,
+): Promise<void> {
+    const { mkdir, writeFile } = await import('node:fs/promises');
+    const { targetPath, dirname } = await resolveLocalTarget(env, key);
+
+    await mkdir(dirname(targetPath), { recursive: true });
+
+    const buffer =
+        data instanceof ArrayBuffer
+            ? Buffer.from(data)
+            : Buffer.from(await new Response(data).arrayBuffer());
+
+    await writeFile(targetPath, buffer);
+}
+
+async function deleteLocal(env: Env, key: string): Promise<void> {
+    const { unlink } = await import('node:fs/promises');
+    const { targetPath } = await resolveLocalTarget(env, key);
+
+    try {
+        await unlink(targetPath);
+    } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+            throw err;
+        }
+    }
+}
+
+function publicUrlLocal(env: Env, key: string, requestOrigin?: string): string {
+    const sanitizedKey = key.replace(/^\/+/, '');
+    const baseFromEnv =
+        env.MEDIA_LOCAL_PUBLIC_URL ||
+        env.MEDIA_DOMAIN ||
+        env.NEXT_PUBLIC_BASE_URL;
+
+    if (baseFromEnv) {
+        const base = baseFromEnv.trim();
+        if (base.startsWith('/')) {
+            const origin = requestOrigin ? requestOrigin.replace(/\/$/, '') : '';
+            const pathBase = base.replace(/\/$/, '');
+            const prefix = origin ? `${origin}${pathBase}` : pathBase;
+            return `${prefix.replace(/\/$/, '')}/${sanitizedKey}`;
+        }
+        return `${base.replace(/\/$/, '')}/${sanitizedKey}`;
+    }
+
+    const fallbackBase = requestOrigin
+        ? `${requestOrigin.replace(/\/$/, '')}${DEFAULT_LOCAL_PUBLIC_URL}`
+        : DEFAULT_LOCAL_PUBLIC_URL;
+    return `${fallbackBase.replace(/\/$/, '')}/${sanitizedKey}`;
+}
+
 // ---- R2 ----
 
 async function putR2(env: Env, key: string, data: ArrayBuffer | ReadableStream, contentType: string): Promise<void> {
@@ -315,6 +388,8 @@ export async function putObject(
     contentType: string,
 ): Promise<void> {
     switch (provider) {
+        case 'local':
+            return putLocal(env, key, data);
         case 'r2':
             return putR2(env, key, data, contentType);
         case 'upyun':
@@ -335,6 +410,8 @@ export async function deleteObject(
     key: string,
 ): Promise<void> {
     switch (provider) {
+        case 'local':
+            return deleteLocal(env, key);
         case 'r2':
             return deleteR2(env, key);
         case 'upyun':
@@ -355,7 +432,11 @@ export function publicUrlForKey(
     key: string,
     requestOrigin?: string,
 ): string {
-    // If MEDIA_DOMAIN is set, use it regardless of provider
+    if (provider === 'local') {
+        return publicUrlLocal(env, key, requestOrigin);
+    }
+
+    // If MEDIA_DOMAIN is set, use it regardless of provider (non-local)
     if (env.MEDIA_DOMAIN) {
         return `${env.MEDIA_DOMAIN.replace(/\/$/, '')}/${key}`;
     }

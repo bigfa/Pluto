@@ -171,7 +171,18 @@ export const SITE_CONFIG = {
 ### Default provider
 
 - `MEDIA_DEFAULT_PROVIDER`
-  - Default storage provider: `r2` | `upyun` | `cos`
+  - Default storage provider: `local` | `r2` | `upyun` | `cos`
+
+### Local (Filesystem)
+
+- `MEDIA_LOCAL_DIR`
+  - Filesystem directory for uploaded media.
+  - Default: `public/uploads`
+
+- `MEDIA_LOCAL_PUBLIC_URL`
+  - Public base URL for local files.
+  - Example: `https://example.com/uploads` or `/uploads`
+  - Default: `/uploads`
 
 ### R2
 

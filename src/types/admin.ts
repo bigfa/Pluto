@@ -1,4 +1,4 @@
-export type MediaProvider = 'r2' | 'upyun' | 'cos';
+export type MediaProvider = 'r2' | 'upyun' | 'cos' | 'local';
 
 export interface MediaCreate {
     id?: string;

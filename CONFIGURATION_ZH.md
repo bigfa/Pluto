@@ -171,7 +171,18 @@ export const SITE_CONFIG = {
 ### 默认存储
 
 - `MEDIA_DEFAULT_PROVIDER`
-  - 默认存储：`r2` | `upyun` | `cos`
+  - 默认存储：`local` | `r2` | `upyun` | `cos`
+
+### 本地存储（Filesystem）
+
+- `MEDIA_LOCAL_DIR`
+  - 本地文件存储目录。
+  - 默认：`public/uploads`
+
+- `MEDIA_LOCAL_PUBLIC_URL`
+  - 本地文件的公开访问前缀。
+  - 示例：`https://example.com/uploads` 或 `/uploads`
+  - 默认：`/uploads`
 
 ### R2
 
