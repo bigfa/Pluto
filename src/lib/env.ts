@@ -10,6 +10,7 @@ export interface Env {
     DB?: D1Database;
     FARALLON?: KVNamespace;
     SUPABASE_DB_URL?: string;
+    SQLITE_PATH?: string;
     NEXT_PUBLIC_API_BASE_URL?: string;
     NEXT_PUBLIC_BASE_URL?: string;
 
@@ -74,6 +75,7 @@ export async function getEnv(): Promise<Env> {
             // Attempt to get DB from process.env (e.g. for local mocks)
             DB: (process.env as unknown as { DB?: D1Database }).DB,
             SUPABASE_DB_URL: process.env.SUPABASE_DB_URL,
+            SQLITE_PATH: process.env.SQLITE_PATH,
             NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
             NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
             // Admin auth

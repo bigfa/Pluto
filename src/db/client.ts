@@ -10,6 +10,44 @@ export type { Env };
 
 export type D1DbType = ReturnType<typeof drizzle<typeof schema>>;
 export type PgDbType = ReturnType<typeof drizzlePg<typeof schemaPg>>;
+// SQLite (better-sqlite3) is loaded dynamically to avoid bundling in non-Node runtimes.
+export type SqliteDbType = any;
+
+type NodeRequireFn = (id: string) => any;
+let sqliteClientCache: { path: string; client: { type: 'sqlite'; db: SqliteDbType; schema: typeof schema } } | null = null;
+
+function getNodeRequire(): NodeRequireFn | null {
+    if (typeof process === 'undefined' || !process.versions?.node) return null;
+    // eslint-disable-next-line no-eval
+    return (0, eval)('require') as NodeRequireFn;
+}
+
+function getSqliteClient(filePath: string) {
+    if (sqliteClientCache && sqliteClientCache.path === filePath) {
+        return sqliteClientCache.client;
+    }
+
+    const nodeRequire = getNodeRequire();
+    if (!nodeRequire) {
+        throw new Error('SQLite adapter requires Node.js runtime.');
+    }
+
+    const Database = nodeRequire('better-sqlite3');
+    const { drizzle: drizzleSqlite } = nodeRequire('drizzle-orm/better-sqlite3');
+    const path = nodeRequire('node:path') as typeof import('node:path');
+    const fs = nodeRequire('node:fs') as typeof import('node:fs');
+
+    if (filePath !== ':memory:') {
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    }
+
+    const sqlite = new Database(filePath);
+    const db = drizzleSqlite(sqlite, { schema });
+    const client = { type: 'sqlite' as const, db, schema };
+
+    sqliteClientCache = { path: filePath, client };
+    return client;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createPgProxy(db: PgDbType): any {
@@ -67,12 +105,21 @@ export type DbClient = {
     db: D1DbType;
     schema: typeof schema;
 } | {
+    type: 'sqlite';
+    db: SqliteDbType;
+    schema: typeof schema;
+} | {
     type: 'pg';
     db: PgDbType;
     schema: typeof schemaPg;
 };
 
 export const getDbClient = (env: Env): DbClient | null => {
+    // Priority 0: Local SQLite (Node runtime only)
+    if (env.SQLITE_PATH) {
+        return getSqliteClient(env.SQLITE_PATH);
+    }
+
     // Priority 1: Supabase PostgreSQL
     if (env.SUPABASE_DB_URL) {
         const client = postgres(env.SUPABASE_DB_URL);
@@ -98,7 +145,7 @@ export const getDbClient = (env: Env): DbClient | null => {
 };
 
 export const hasDatabase = (env: Env): boolean => {
-    return !!(env.DB || env.SUPABASE_DB_URL);
+    return !!(env.DB || env.SUPABASE_DB_URL || env.SQLITE_PATH);
 };
 
 /**

@@ -151,6 +151,11 @@ export const SITE_CONFIG = {
 
 ## 数据库
 
+- `SQLITE_PATH`
+  - 本地 SQLite 文件路径（Node/Docker 环境）。
+  - 设置后优先使用 SQLite（优先于 Supabase/D1）。
+  - 示例：`/data/pluto.db`
+
 - `SUPABASE_DB_URL`
   - Supabase Postgres 连接串
 

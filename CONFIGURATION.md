@@ -151,6 +151,11 @@ export const SITE_CONFIG = {
 
 ## Database
 
+- `SQLITE_PATH`
+  - Local SQLite file path (Node runtime / Docker).
+  - If set, SQLite is used before Supabase/D1.
+  - Example: `/data/pluto.db`
+
 - `SUPABASE_DB_URL`
   - Postgres connection string for Supabase.
 

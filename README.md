@@ -89,6 +89,35 @@ The project includes a built-in admin panel at `/admin`. You need to configure t
 
 > **Note**: If `ADMIN_PASS_HASH` is set, plaintext `ADMIN_PASS` will be ignored. Login is rate-limited to 5 attempts per 15 minutes per IP (requires KV binding).
 
+## Docker + SQLite (Local)
+
+For a single-container deployment with SQLite and local media storage:
+
+1. Set these environment variables:
+
+```bash
+SQLITE_PATH=/data/pluto.db
+MEDIA_DEFAULT_PROVIDER=local
+MEDIA_LOCAL_DIR=/data/uploads
+MEDIA_LOCAL_PUBLIC_URL=https://your-domain/uploads
+```
+
+You can also set `MEDIA_LOCAL_PUBLIC_URL=/uploads`.
+2. Initialize the database once:
+
+```bash
+sqlite3 /data/pluto.db < sql/init_d1.sql
+```
+
+3. Run:
+
+```bash
+npm run build
+npm run start
+```
+
+Make sure `/data` is a persistent volume in Docker.
+
 ## Deployment
 
 This project targets **Cloudflare Workers** via OpenNext.

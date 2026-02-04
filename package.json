@@ -22,6 +22,7 @@
         "@radix-ui/react-select": "^2.2.6",
         "@radix-ui/react-tabs": "^1.1.13",
         "@supabase/supabase-js": "^2.93.3",
+        "better-sqlite3": "^11.5.0",
         "drizzle-orm": "^0.45.1",
         "exifreader": "^4.36.1",
         "jose": "^6.1.3",

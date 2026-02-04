@@ -49,6 +49,36 @@
 - `CONFIGURATION.md`（EN）
 - `CONFIGURATION_ZH.md`（中文）
 
+## Docker + SQLite（本地）
+
+适合单容器部署，使用 SQLite + 本地媒体目录：
+
+1. 设置环境变量：
+
+```bash
+SQLITE_PATH=/data/pluto.db
+MEDIA_DEFAULT_PROVIDER=local
+MEDIA_LOCAL_DIR=/data/uploads
+MEDIA_LOCAL_PUBLIC_URL=https://your-domain/uploads
+```
+
+也可以使用 `MEDIA_LOCAL_PUBLIC_URL=/uploads`。
+
+2. 初始化数据库（仅需一次）：
+
+```bash
+sqlite3 /data/pluto.db < sql/init_d1.sql
+```
+
+3. 构建并启动：
+
+```bash
+npm run build
+npm run start
+```
+
+请确保 `/data` 是持久化挂载目录。
+
 ## 部署
 
 本项目使用 OpenNext 部署到 **Cloudflare Workers**。
