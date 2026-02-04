@@ -1,0 +1,28 @@
+name = "gallery"
+main = ".open-next/worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+# Use environment variables or Cloudflare dashboard for vars/secrets.
+# Examples:
+# - wrangler secret put ADMIN_PASS_HASH
+# - wrangler secret put SESSION_SECRET
+# - wrangler secret put RESEND_API_KEY
+# - wrangler vars set NEXT_PUBLIC_BASE_URL
+# - wrangler vars set R2_DOMAIN
+# - wrangler vars set EMAIL_FROM
+
+[[d1_databases]]
+binding = "DB"
+database_name = "photos"
+database_id = "52077508-5ee7-4e53-bad1-5eeb1b21e1b2"
+
+[[kv_namespaces]]
+binding = "FARALLON"
+id = "e56fc8b8af6040738ee2b63ded4a0abe"
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "photos"

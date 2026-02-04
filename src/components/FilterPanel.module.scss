@@ -1,0 +1,142 @@
+.panel {
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.toggleBtn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.toggleBtn:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.badge {
+    margin-left: auto;
+    margin-right: 0.5rem;
+    padding: 0.125rem 0.5rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.chevron {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.chevronUp {
+    transform: rotate(180deg);
+}
+
+.content {
+    padding: 0 1rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+}
+
+.filterGroup {
+    flex: 1;
+    min-width: 200px;
+}
+
+.label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.select,
+.input,
+.dateInput {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.select:focus,
+.input:focus,
+.dateInput:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.select option {
+    background: white;
+    color: var(--color-text);
+}
+
+.dateRange {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dateInput {
+    flex: 1;
+}
+
+.dateSeparator {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+}
+
+.clearBtn {
+    width: 100%;
+    padding: 0.625rem 1rem;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clearBtn:hover {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.15);
+    color: var(--color-text);
+}
+
+@media (max-width: 768px) {
+    .filterGroup {
+        min-width: 100%;
+    }
+
+    .dateRange {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .dateSeparator {
+        display: none;
+    }
+}

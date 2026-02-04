@@ -1,0 +1,140 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--media-gap, 1rem);
+    width: 100%;
+}
+
+.grid.cols3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Masonry Layout (JS Controlled) */
+.masonryContainer {
+    display: flex;
+    gap: var(--media-gap, 1rem);
+    width: 100%;
+}
+
+.masonryColumn {
+    display: flex;
+    flex-direction: column;
+    gap: var(--media-gap, 1rem);
+    flex: 1;
+    min-width: 0; /* Prevents overflow issues */
+}
+
+/* Ensure images don't overflow */
+.masonryItem {
+    width: 100%;
+}
+
+
+@media (max-width: 1280px) {
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 960px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .grid {
+        grid-template-columns: 1fr;
+        gap: var(--media-gap-mobile, 0.75rem);
+    }
+    
+    .grid.cols3 {
+        grid-template-columns: 1fr;
+    }
+
+    .masonryContainer {
+        gap: var(--media-gap-mobile, 0.75rem);
+    }
+
+    .masonryColumn {
+        gap: var(--media-gap-mobile, 0.75rem);
+    }
+}
+
+/* Skeleton loading */
+.skeleton {
+    background: var(--color-surface);
+    /* border: 1px solid var(--color-border); Removed */
+    border-radius: 0;
+    overflow: hidden;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.skeletonImage {
+    aspect-ratio: 4 / 3;
+    background: linear-gradient(90deg,
+            rgba(0, 0, 0, 0.03) 0%,
+            rgba(0, 0, 0, 0.06) 50%,
+            rgba(0, 0, 0, 0.03) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeletonInfo {
+    padding: 0.75rem 1rem;
+    /* border-top: 1px solid var(--color-border); Removed */
+}
+
+.skeletonText {
+    height: 0.75rem;
+    width: 60%;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: var(--radius-sm);
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Empty state */
+.empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.emptyIcon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.emptyTitle {
+    color: var(--color-text);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.emptyText {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+}

@@ -1,0 +1,225 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: #f5f5f5;
+    display: flex;
+    align-items: stretch;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Left sidebar */
+.sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: #ffffff;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 2rem 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.likeSection {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.sidebarSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sidebarTitle {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sidebarValue {
+    font-size: 0.9375rem;
+    color: #333;
+    font-weight: 500;
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Main content */
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    animation: scaleIn 0.2s ease;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.98);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Toolbar container */
+.toolbar {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+/* Navigation buttons group */
+.navButtons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.navBtn {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.navBtn:hover:not(.disabled) {
+    background: #f0f0f0;
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+.navBtn.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Close button */
+.closeBtn {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+    background: #f0f0f0;
+    border-color: rgba(0, 0, 0, 0.2);
+    transform: rotate(90deg);
+}
+
+/* Image wrapper */
+.imageWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.image {
+    max-width: 100%;
+    max-height: calc(100vh - 8rem);
+    object-fit: contain;
+    border-radius: 0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .overlay {
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 1rem;
+        gap: 1rem;
+        border-right: none;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        order: 2;
+        max-height: 35vh;
+        overflow-y: auto;
+        flex-shrink: 0;
+    }
+
+    .likeSection {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .sidebarSection {
+        min-width: 80px;
+        flex-shrink: 0;
+    }
+
+    .content {
+        order: 1;
+        padding: 1rem;
+        padding-top: 4rem;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .toolbar {
+        top: 0.75rem;
+        left: 0.75rem;
+        right: 0.75rem;
+    }
+
+    .navBtn,
+    .closeBtn {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .imageWrapper {
+        max-height: 100%;
+        overflow: hidden;
+    }
+
+    .image {
+        max-height: calc(65vh - 6rem);
+        width: auto;
+    }
+}

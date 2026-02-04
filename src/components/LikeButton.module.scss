@@ -1,0 +1,99 @@
+.likeButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.6rem;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md, 8px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--color-text-secondary, #666);
+}
+
+.likeButton:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.likeButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.likeButton.liked {
+    color: #ef4444;
+}
+
+.likeButton.liked:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+/* Heart icon */
+.heart {
+    transition: transform 0.2s ease;
+}
+
+.likeButton:hover .heart {
+    transform: scale(1.1);
+}
+
+.likeButton.animating .heart {
+    animation: heartBeat 0.3s ease-in-out;
+}
+
+@keyframes heartBeat {
+    0% {
+        transform: scale(1);
+    }
+    25% {
+        transform: scale(1.3);
+    }
+    50% {
+        transform: scale(0.95);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Count */
+.count {
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Size variants */
+.small .heart {
+    width: 14px;
+    height: 14px;
+}
+
+.small .count {
+    font-size: 0.7rem;
+}
+
+.small {
+    padding: 0.25rem 0.4rem;
+    gap: 0.25rem;
+}
+
+.medium .heart {
+    width: 18px;
+    height: 18px;
+}
+
+.large .heart {
+    width: 22px;
+    height: 22px;
+}
+
+.large .count {
+    font-size: 0.875rem;
+}
+
+.large {
+    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+}
