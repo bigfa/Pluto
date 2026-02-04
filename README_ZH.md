@@ -79,6 +79,46 @@ npm run start
 
 请确保 `/data` 是持久化挂载目录。
 
+### Docker 构建与运行
+
+```bash
+docker build -t pluto:local .
+docker run --rm -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e SQLITE_PATH=/data/pluto.db \
+  -e MEDIA_DEFAULT_PROVIDER=local \
+  -e MEDIA_LOCAL_DIR=/data/uploads \
+  -e MEDIA_LOCAL_PUBLIC_URL=/uploads \
+  -e NEXT_PUBLIC_BASE_URL=http://localhost:3000 \
+  -e ADMIN_USER=admin \
+  -e ADMIN_PASS_HASH=pbkdf2:100000:<salt_hex>:<hash_hex> \
+  -e SESSION_SECRET=change-me-to-a-long-random-string \
+  -v $(pwd)/data:/data \
+  pluto:local
+```
+
+或使用 `docker-compose`：
+
+```bash
+docker compose up --build
+```
+
+### Nginx 静态路由（本地媒体）
+
+如果希望 Nginx 直接托管本地图片：
+
+```nginx
+location /uploads/ {
+  alias /data/uploads/;
+  access_log off;
+  add_header Cache-Control "public, max-age=31536000, immutable";
+}
+```
+
+设置 `MEDIA_LOCAL_PUBLIC_URL=https://your-domain/uploads`，并确保 `/data/uploads` 已挂载。
+
+如果不使用 Nginx，也可以把卷挂载到 `public/uploads`，并设置 `MEDIA_LOCAL_DIR=public/uploads`，`MEDIA_LOCAL_PUBLIC_URL=/uploads`。
+
 ## 部署
 
 本项目使用 OpenNext 部署到 **Cloudflare Workers**。

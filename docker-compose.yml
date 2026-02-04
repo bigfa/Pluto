@@ -1,0 +1,18 @@
+services:
+  pluto:
+    build: .
+    image: pluto:local
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      SQLITE_PATH: /data/pluto.db
+      MEDIA_DEFAULT_PROVIDER: local
+      MEDIA_LOCAL_DIR: /data/uploads
+      MEDIA_LOCAL_PUBLIC_URL: /uploads
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      ADMIN_USER: admin
+      ADMIN_PASS_HASH: pbkdf2:100000:<salt_hex>:<hash_hex>
+      SESSION_SECRET: change-me-to-a-long-random-string
+    volumes:
+      - ./data:/data

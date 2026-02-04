@@ -118,6 +118,46 @@ npm run start
 
 Make sure `/data` is a persistent volume in Docker.
 
+### Build & Run with Docker
+
+```bash
+docker build -t pluto:local .
+docker run --rm -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e SQLITE_PATH=/data/pluto.db \
+  -e MEDIA_DEFAULT_PROVIDER=local \
+  -e MEDIA_LOCAL_DIR=/data/uploads \
+  -e MEDIA_LOCAL_PUBLIC_URL=/uploads \
+  -e NEXT_PUBLIC_BASE_URL=http://localhost:3000 \
+  -e ADMIN_USER=admin \
+  -e ADMIN_PASS_HASH=pbkdf2:100000:<salt_hex>:<hash_hex> \
+  -e SESSION_SECRET=change-me-to-a-long-random-string \
+  -v $(pwd)/data:/data \
+  pluto:local
+```
+
+Or use `docker-compose`:
+
+```bash
+docker compose up --build
+```
+
+### Nginx Static Route (Local Media)
+
+If you want Nginx to serve local media directly:
+
+```nginx
+location /uploads/ {
+  alias /data/uploads/;
+  access_log off;
+  add_header Cache-Control "public, max-age=31536000, immutable";
+}
+```
+
+Set `MEDIA_LOCAL_PUBLIC_URL=https://your-domain/uploads` and ensure `/data/uploads` is mounted.
+
+If you prefer to serve files directly from Next.js, you can mount the volume to `public/uploads` and set `MEDIA_LOCAL_DIR=public/uploads` with `MEDIA_LOCAL_PUBLIC_URL=/uploads`.
+
 ## Deployment
 
 This project targets **Cloudflare Workers** via OpenNext.
