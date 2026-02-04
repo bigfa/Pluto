@@ -142,6 +142,8 @@ Or use `docker-compose`:
 docker compose up --build
 ```
 
+This starts an Nginx sidecar on `http://localhost:8080`.
+
 ### Nginx Static Route (Local Media)
 
 If you want Nginx to serve local media directly:
@@ -157,6 +159,10 @@ location /uploads/ {
 Set `MEDIA_LOCAL_PUBLIC_URL=https://your-domain/uploads` and ensure `/data/uploads` is mounted.
 
 If you prefer to serve files directly from Next.js, you can mount the volume to `public/uploads` and set `MEDIA_LOCAL_DIR=public/uploads` with `MEDIA_LOCAL_PUBLIC_URL=/uploads`.
+
+### Nginx Full Example
+
+See `nginx/nginx.conf` for a full working example.
 
 ## Deployment
 

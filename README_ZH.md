@@ -103,6 +103,8 @@ docker run --rm -p 3000:3000 \
 docker compose up --build
 ```
 
+会在 `http://localhost:8080` 启动 Nginx 侧车。
+
 ### Nginx 静态路由（本地媒体）
 
 如果希望 Nginx 直接托管本地图片：
@@ -118,6 +120,10 @@ location /uploads/ {
 设置 `MEDIA_LOCAL_PUBLIC_URL=https://your-domain/uploads`，并确保 `/data/uploads` 已挂载。
 
 如果不使用 Nginx，也可以把卷挂载到 `public/uploads`，并设置 `MEDIA_LOCAL_DIR=public/uploads`，`MEDIA_LOCAL_PUBLIC_URL=/uploads`。
+
+### Nginx 完整示例
+
+请参考 `nginx/nginx.conf`。
 
 ## 部署
 
