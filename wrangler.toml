@@ -10,9 +10,8 @@ assets = { directory = ".open-next/assets", binding = "ASSETS" }
 # - wrangler secret put ADMIN_PASS_HASH
 # - wrangler secret put SESSION_SECRET
 # - wrangler secret put RESEND_API_KEY
-# - wrangler vars set NEXT_PUBLIC_BASE_URL
-# - wrangler vars set R2_DOMAIN
-# - wrangler vars set EMAIL_FROM
+# - Add non-secret vars under [vars] or [env.<name>.vars] in this file
+# - Or run: npm run wrangler:sync-env -- --file .env.local
 
 [[d1_databases]]
 binding = "DB"
@@ -26,3 +25,17 @@ id = "e56fc8b8af6040738ee2b63ded4a0abe"
 [[r2_buckets]]
 binding = "MEDIA_BUCKET"
 bucket_name = "photos"
+
+[vars]
+NEXT_PUBLIC_BASE_URL = "https://w.wpista.com"
+COS_BUCKET = "photos-1369005368"
+COS_REGION = "ap-guangzhou"
+COS_DOMAIN = "https://i.wpista.com"
+R2_DOMAIN = "https://im.wpista.com"
+EMAIL_FROM = "noreply@wpista.com"
+
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true

@@ -110,8 +110,8 @@ If you want to push your local `.env` values to Workers in one step:
 npm run wrangler:sync-env -- --file .env.local
 ```
 
-This script sends secrets with `wrangler secret put` and non-sensitive values with `wrangler vars set`.
-You can pass `--env <name>` or run a dry run with `--dry-run`.
+This script writes non-sensitive values into `wrangler.toml` under `[vars]` (or `[env.<name>.vars]` when using `--env`),
+and pushes secrets via `wrangler secret put`. You can pass `--env <name>` or run a dry run with `--dry-run`.
 
 ## 5) Build & Deploy
 
@@ -121,32 +121,42 @@ npm run deploy
 
 This runs OpenNext build and deploys to Workers.
 
-## Wrangler Vars & Secrets (CLI)
+## Wrangler Vars & Secrets
 
-Use `vars` for non-sensitive values and `secret` for sensitive values.
+Non-secret values live in `wrangler.toml`:
+
+```toml
+[vars]
+NEXT_PUBLIC_BASE_URL = "https://example.com"
+R2_DOMAIN = "https://your-r2-domain"
+EMAIL_FROM = "hi@example.com"
+NEXT_PUBLIC_SITE_NAME = "Pluto"
+NEXT_PUBLIC_SITE_TITLE = "Pluto"
+NEXT_PUBLIC_SITE_DESCRIPTION = "My photo gallery"
+NEXT_PUBLIC_SITE_URL = "https://example.com"
+NEXT_PUBLIC_DEFAULT_LOCALE = "zh"
+NEXT_PUBLIC_LOCALES = "zh,en"
+NEXT_PUBLIC_NAV_LINKS = "[]"
+NEXT_PUBLIC_MASONRY_COLUMNS = "4"
+NEXT_PUBLIC_PAGE_SIZE = "20"
+NEXT_PUBLIC_MEDIA_GAP = "16"
+NEXT_PUBLIC_MEDIA_GAP_MOBILE = "8"
+NEXT_PUBLIC_ENABLE_FILTERS = "true"
+NEXT_PUBLIC_ENABLE_LIKES = "true"
+NEXT_PUBLIC_ENABLE_NEWSLETTER = "false"
+NEXT_PUBLIC_ENABLE_FOOTER_MENU = "true"
+```
+
+Per-environment:
+
+```toml
+[env.production.vars]
+NEXT_PUBLIC_BASE_URL = "https://example.com"
+```
+
+Secrets are still set via CLI:
 
 ```bash
-# Public vars
-wrangler vars set NEXT_PUBLIC_BASE_URL
-wrangler vars set R2_DOMAIN
-wrangler vars set EMAIL_FROM
-wrangler vars set NEXT_PUBLIC_SITE_NAME
-wrangler vars set NEXT_PUBLIC_SITE_TITLE
-wrangler vars set NEXT_PUBLIC_SITE_DESCRIPTION
-wrangler vars set NEXT_PUBLIC_SITE_URL
-wrangler vars set NEXT_PUBLIC_DEFAULT_LOCALE
-wrangler vars set NEXT_PUBLIC_LOCALES
-wrangler vars set NEXT_PUBLIC_NAV_LINKS
-wrangler vars set NEXT_PUBLIC_MASONRY_COLUMNS
-wrangler vars set NEXT_PUBLIC_PAGE_SIZE
-wrangler vars set NEXT_PUBLIC_MEDIA_GAP
-wrangler vars set NEXT_PUBLIC_MEDIA_GAP_MOBILE
-wrangler vars set NEXT_PUBLIC_ENABLE_FILTERS
-wrangler vars set NEXT_PUBLIC_ENABLE_LIKES
-wrangler vars set NEXT_PUBLIC_ENABLE_NEWSLETTER
-wrangler vars set NEXT_PUBLIC_ENABLE_FOOTER_MENU
-
-# Secrets
 wrangler secret put ADMIN_USER
 wrangler secret put ADMIN_PASS_HASH
 wrangler secret put SESSION_SECRET

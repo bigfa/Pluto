@@ -60,18 +60,24 @@ export interface Env {
  * Get environment bindings.
  * Call this in server components or API routes to access D1, KV, Supabase, etc.
  */
-export async function getEnv(): Promise<Env> {
-    const isNodeRuntime = typeof process !== 'undefined' && !!process.versions?.node;
-    const forceCloudflare = process.env.FORCE_CLOUDFLARE_CONTEXT === '1';
+let cloudflareContextAvailable: boolean | null = null;
 
-    if (!isNodeRuntime || forceCloudflare) {
+export async function getEnv(): Promise<Env> {
+    const forceCloudflare = typeof process !== 'undefined' && process.env.FORCE_CLOUDFLARE_CONTEXT === '1';
+
+    // Prefer Cloudflare bindings when available (works for nodejs_compat runtimes too).
+    if (forceCloudflare || cloudflareContextAvailable !== false) {
         try {
             const cfModule = '@opennextjs/cloudflare';
             const { getCloudflareContext } = await import(/* webpackIgnore: true */ cfModule);
             const { env } = await getCloudflareContext({ async: true });
+            cloudflareContextAvailable = true;
             return env as Env;
         } catch (e) {
-            console.warn('Failed to get Cloudflare context, falling back to process.env:', e);
+            cloudflareContextAvailable = false;
+            if (forceCloudflare) {
+                console.warn('Failed to get Cloudflare context, falling back to process.env:', e);
+            }
         }
     }
 
@@ -125,5 +131,5 @@ export async function getEnv(): Promise<Env> {
  */
 export async function hasDatabase(): Promise<boolean> {
     const env = await getEnv();
-    return !!env.DB || !!env.SUPABASE_DB_URL;
+    return !!env.DB || !!env.SUPABASE_DB_URL || !!env.SQLITE_PATH;
 }

@@ -110,8 +110,8 @@ npx wrangler d1 execute <DB_NAME> --file=sql/init_d1.sql
 npm run wrangler:sync-env -- --file .env.local
 ```
 
-脚本会自动将敏感值用 `wrangler secret put`，普通值用 `wrangler vars set`。
-可传 `--env <name>`，或者 `--dry-run` 做演练。
+脚本会将普通值写入 `wrangler.toml` 的 `[vars]`（或 `--env` 对应的 `[env.<name>.vars]`），
+并使用 `wrangler secret put` 推送敏感值。可传 `--env <name>`，或者 `--dry-run` 做演练。
 
 ## 6) 构建与部署
 
@@ -121,32 +121,42 @@ npm run deploy
 
 该命令会执行 OpenNext 构建并部署到 Workers。
 
-## Wrangler Vars / Secret 命令清单
+## Wrangler Vars / Secret 配置清单
 
-非敏感信息用 `vars`，敏感信息用 `secret`。
+普通变量建议写在 `wrangler.toml` 中：
+
+```toml
+[vars]
+NEXT_PUBLIC_BASE_URL = "https://example.com"
+R2_DOMAIN = "https://your-r2-domain"
+EMAIL_FROM = "hi@example.com"
+NEXT_PUBLIC_SITE_NAME = "Pluto"
+NEXT_PUBLIC_SITE_TITLE = "Pluto"
+NEXT_PUBLIC_SITE_DESCRIPTION = "我的照片站"
+NEXT_PUBLIC_SITE_URL = "https://example.com"
+NEXT_PUBLIC_DEFAULT_LOCALE = "zh"
+NEXT_PUBLIC_LOCALES = "zh,en"
+NEXT_PUBLIC_NAV_LINKS = "[]"
+NEXT_PUBLIC_MASONRY_COLUMNS = "4"
+NEXT_PUBLIC_PAGE_SIZE = "20"
+NEXT_PUBLIC_MEDIA_GAP = "16"
+NEXT_PUBLIC_MEDIA_GAP_MOBILE = "8"
+NEXT_PUBLIC_ENABLE_FILTERS = "true"
+NEXT_PUBLIC_ENABLE_LIKES = "true"
+NEXT_PUBLIC_ENABLE_NEWSLETTER = "false"
+NEXT_PUBLIC_ENABLE_FOOTER_MENU = "true"
+```
+
+按环境区分：
+
+```toml
+[env.production.vars]
+NEXT_PUBLIC_BASE_URL = "https://example.com"
+```
+
+敏感变量仍使用 CLI：
 
 ```bash
-# Public vars
-wrangler vars set NEXT_PUBLIC_BASE_URL
-wrangler vars set R2_DOMAIN
-wrangler vars set EMAIL_FROM
-wrangler vars set NEXT_PUBLIC_SITE_NAME
-wrangler vars set NEXT_PUBLIC_SITE_TITLE
-wrangler vars set NEXT_PUBLIC_SITE_DESCRIPTION
-wrangler vars set NEXT_PUBLIC_SITE_URL
-wrangler vars set NEXT_PUBLIC_DEFAULT_LOCALE
-wrangler vars set NEXT_PUBLIC_LOCALES
-wrangler vars set NEXT_PUBLIC_NAV_LINKS
-wrangler vars set NEXT_PUBLIC_MASONRY_COLUMNS
-wrangler vars set NEXT_PUBLIC_PAGE_SIZE
-wrangler vars set NEXT_PUBLIC_MEDIA_GAP
-wrangler vars set NEXT_PUBLIC_MEDIA_GAP_MOBILE
-wrangler vars set NEXT_PUBLIC_ENABLE_FILTERS
-wrangler vars set NEXT_PUBLIC_ENABLE_LIKES
-wrangler vars set NEXT_PUBLIC_ENABLE_NEWSLETTER
-wrangler vars set NEXT_PUBLIC_ENABLE_FOOTER_MENU
-
-# Secrets
 wrangler secret put ADMIN_USER
 wrangler secret put ADMIN_PASS_HASH
 wrangler secret put SESSION_SECRET
