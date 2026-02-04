@@ -11,14 +11,13 @@ export type { Env };
 export type D1DbType = ReturnType<typeof drizzle<typeof schema>>;
 export type PgDbType = ReturnType<typeof drizzlePg<typeof schemaPg>>;
 // SQLite (better-sqlite3) is loaded dynamically to avoid bundling in non-Node runtimes.
-export type SqliteDbType = any;
+export type SqliteDbType = unknown;
 
-type NodeRequireFn = (id: string) => any;
+type NodeRequireFn = <T = unknown>(id: string) => T;
 let sqliteClientCache: { path: string; client: { type: 'sqlite'; db: SqliteDbType; schema: typeof schema } } | null = null;
 
 function getNodeRequire(): NodeRequireFn | null {
     if (typeof process === 'undefined' || !process.versions?.node) return null;
-    // eslint-disable-next-line no-eval
     return (0, eval)('require') as NodeRequireFn;
 }
 
