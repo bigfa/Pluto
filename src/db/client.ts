@@ -14,6 +14,8 @@ export type PgDbType = ReturnType<typeof drizzlePg<typeof schemaPg>>;
 export type SqliteDbType = unknown;
 
 type NodeRequireFn = <T = unknown>(id: string) => T;
+type SqliteDatabaseCtor = new (path: string) => unknown;
+type DrizzleSqliteModule = { drizzle: (db: unknown, options: { schema: typeof schema }) => unknown };
 let sqliteClientCache: { path: string; client: { type: 'sqlite'; db: SqliteDbType; schema: typeof schema } } | null = null;
 
 function getNodeRequire(): NodeRequireFn | null {
@@ -31,8 +33,8 @@ function getSqliteClient(filePath: string) {
         throw new Error('SQLite adapter requires Node.js runtime.');
     }
 
-    const Database = nodeRequire('better-sqlite3');
-    const { drizzle: drizzleSqlite } = nodeRequire('drizzle-orm/better-sqlite3');
+    const Database = nodeRequire<SqliteDatabaseCtor>('better-sqlite3');
+    const { drizzle: drizzleSqlite } = nodeRequire<DrizzleSqliteModule>('drizzle-orm/better-sqlite3');
     const path = nodeRequire('node:path') as typeof import('node:path');
     const fs = nodeRequire('node:fs') as typeof import('node:fs');
 

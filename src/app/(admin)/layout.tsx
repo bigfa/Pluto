@@ -6,6 +6,8 @@ export const metadata: Metadata = {
     title: `${SITE_CONFIG.siteInfo.name} ${t('admin_brand_suffix')}`,
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
     return children;
 }

@@ -61,59 +61,63 @@ export interface Env {
  * Call this in server components or API routes to access D1, KV, Supabase, etc.
  */
 export async function getEnv(): Promise<Env> {
-    try {
-        const cfModule = '@opennextjs/cloudflare';
-        const { getCloudflareContext } = await import(/* webpackIgnore: true */ cfModule);
-        const { env } = await getCloudflareContext({ async: true });
-        return env as Env;
-    } catch (e) {
-        // Log error for debugging why Cloudflare context failed
-        console.warn('Failed to get Cloudflare context, falling back to process.env:', e);
+    const isNodeRuntime = typeof process !== 'undefined' && !!process.versions?.node;
+    const forceCloudflare = process.env.FORCE_CLOUDFLARE_CONTEXT === '1';
 
-        // Non-Cloudflare environment (EdgeOne Pages, local dev, etc.)
-        return {
-            // Attempt to get DB from process.env (e.g. for local mocks)
-            DB: (process.env as unknown as { DB?: D1Database }).DB,
-            SUPABASE_DB_URL: process.env.SUPABASE_DB_URL,
-            SQLITE_PATH: process.env.SQLITE_PATH,
-            NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-            NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
-            // Admin auth
-            ADMIN_USER: process.env.ADMIN_USER,
-            ADMIN_PASS_HASH: process.env.ADMIN_PASS_HASH,
-            ADMIN_PASS: process.env.ADMIN_PASS,
-            SESSION_SECRET: process.env.SESSION_SECRET,
-            // Storage
-            MEDIA_DOMAIN: process.env.MEDIA_DOMAIN,
-            MEDIA_DEFAULT_PROVIDER: process.env.MEDIA_DEFAULT_PROVIDER,
-            MEDIA_THUMB_STYLE: process.env.MEDIA_THUMB_STYLE,
-            MEDIA_MEDIUM_STYLE: process.env.MEDIA_MEDIUM_STYLE,
-            MEDIA_LARGE_STYLE: process.env.MEDIA_LARGE_STYLE,
-            R2_DOMAIN: process.env.R2_DOMAIN,
-            MEDIA_LOCAL_DIR: process.env.MEDIA_LOCAL_DIR,
-            MEDIA_LOCAL_PUBLIC_URL: process.env.MEDIA_LOCAL_PUBLIC_URL,
-            // UpYun
-            UPYUN_BUCKET: process.env.UPYUN_BUCKET,
-            UPYUN_OPERATOR: process.env.UPYUN_OPERATOR,
-            UPYUN_PASSWORD: process.env.UPYUN_PASSWORD,
-            UPYUN_DOMAIN: process.env.UPYUN_DOMAIN,
-            // COS
-            COS_SECRET_ID: process.env.COS_SECRET_ID,
-            COS_SECRET_KEY: process.env.COS_SECRET_KEY,
-            COS_BUCKET: process.env.COS_BUCKET,
-            COS_REGION: process.env.COS_REGION,
-            COS_DOMAIN: process.env.COS_DOMAIN,
-            // Email
-            RESEND_API_KEY: process.env.RESEND_API_KEY,
-            RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
-            EMAIL_FROM: process.env.EMAIL_FROM,
-            // Geocoding
-            GEOCODE_PROVIDER: process.env.GEOCODE_PROVIDER,
-            GEOCODE_API_KEY: process.env.GEOCODE_API_KEY,
-            GEOCODE_USER_AGENT: process.env.GEOCODE_USER_AGENT,
-            GEOCODE_LANGUAGE: process.env.GEOCODE_LANGUAGE,
-        };
+    if (!isNodeRuntime || forceCloudflare) {
+        try {
+            const cfModule = '@opennextjs/cloudflare';
+            const { getCloudflareContext } = await import(/* webpackIgnore: true */ cfModule);
+            const { env } = await getCloudflareContext({ async: true });
+            return env as Env;
+        } catch (e) {
+            console.warn('Failed to get Cloudflare context, falling back to process.env:', e);
+        }
     }
+
+    // Non-Cloudflare environment (Node, local dev, Docker, etc.)
+    return {
+        // Attempt to get DB from process.env (e.g. for local mocks)
+        DB: (process.env as unknown as { DB?: D1Database }).DB,
+        SUPABASE_DB_URL: process.env.SUPABASE_DB_URL,
+        SQLITE_PATH: process.env.SQLITE_PATH,
+        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+        NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+        // Admin auth
+        ADMIN_USER: process.env.ADMIN_USER,
+        ADMIN_PASS_HASH: process.env.ADMIN_PASS_HASH,
+        ADMIN_PASS: process.env.ADMIN_PASS,
+        SESSION_SECRET: process.env.SESSION_SECRET,
+        // Storage
+        MEDIA_DOMAIN: process.env.MEDIA_DOMAIN,
+        MEDIA_DEFAULT_PROVIDER: process.env.MEDIA_DEFAULT_PROVIDER,
+        MEDIA_THUMB_STYLE: process.env.MEDIA_THUMB_STYLE,
+        MEDIA_MEDIUM_STYLE: process.env.MEDIA_MEDIUM_STYLE,
+        MEDIA_LARGE_STYLE: process.env.MEDIA_LARGE_STYLE,
+        R2_DOMAIN: process.env.R2_DOMAIN,
+        MEDIA_LOCAL_DIR: process.env.MEDIA_LOCAL_DIR,
+        MEDIA_LOCAL_PUBLIC_URL: process.env.MEDIA_LOCAL_PUBLIC_URL,
+        // UpYun
+        UPYUN_BUCKET: process.env.UPYUN_BUCKET,
+        UPYUN_OPERATOR: process.env.UPYUN_OPERATOR,
+        UPYUN_PASSWORD: process.env.UPYUN_PASSWORD,
+        UPYUN_DOMAIN: process.env.UPYUN_DOMAIN,
+        // COS
+        COS_SECRET_ID: process.env.COS_SECRET_ID,
+        COS_SECRET_KEY: process.env.COS_SECRET_KEY,
+        COS_BUCKET: process.env.COS_BUCKET,
+        COS_REGION: process.env.COS_REGION,
+        COS_DOMAIN: process.env.COS_DOMAIN,
+        // Email
+        RESEND_API_KEY: process.env.RESEND_API_KEY,
+        RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+        EMAIL_FROM: process.env.EMAIL_FROM,
+        // Geocoding
+        GEOCODE_PROVIDER: process.env.GEOCODE_PROVIDER,
+        GEOCODE_API_KEY: process.env.GEOCODE_API_KEY,
+        GEOCODE_USER_AGENT: process.env.GEOCODE_USER_AGENT,
+        GEOCODE_LANGUAGE: process.env.GEOCODE_LANGUAGE,
+    };
 }
 
 /**
