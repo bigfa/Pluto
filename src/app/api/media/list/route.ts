@@ -4,7 +4,7 @@ import { eq, desc, like, and, sql, or, inArray } from 'drizzle-orm';
 import { getEnv } from '@/lib/env';
 import { getDb } from '@/db/client';
 import type { Media, MediaListParams } from '@/types/media';
-import { resolveMediaUrls } from '@/lib/mediaTransforms';
+import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
 
 
 
@@ -119,6 +119,8 @@ export async function GET(request: NextRequest) {
             .select({
                 id: schema.media.id,
                 url: schema.media.url,
+                provider: schema.media.provider,
+                object_key: schema.media.object_key,
                 url_thumb: schema.media.url_thumb,
                 url_medium: schema.media.url_medium,
                 url_large: schema.media.url_large,
@@ -191,18 +193,19 @@ export async function GET(request: NextRequest) {
             return value === '1' || value === 'true';
         };
 
+        const requestOrigin = new URL(request.url).origin;
         const mediaWithDetails: Media[] = results.map((m: any) => {
             const categories = categoriesByMedia.get(m.id) || [];
             const tags = tagsByMedia.get(m.id) || [];
-            const urls = resolveMediaUrls(m.url, env, {
-                url_thumb: m.url_thumb,
-                url_medium: m.url_medium,
-                url_large: m.url_large,
-            });
+            const urls = resolveMediaOutputUrls(env, {
+                url: m.url,
+                provider: m.provider,
+                object_key: m.object_key,
+            }, requestOrigin);
 
             return {
                 id: m.id,
-                url: m.url,
+                url: urls.url || m.url,
                 url_thumb: urls.url_thumb,
                 url_medium: urls.url_medium,
                 url_large: urls.url_large,

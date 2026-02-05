@@ -4,7 +4,7 @@ import { eq, desc, like, and, sql, or, inArray } from 'drizzle-orm';
 import { getEnv } from '@/lib/env';
 import { getDb } from '@/db/client';
 import type { Album } from '@/types/album';
-import { resolveMediaUrls } from '@/lib/mediaTransforms';
+import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
 
 
 
@@ -74,6 +74,8 @@ export async function GET(request: NextRequest) {
                 .select({
                     id: schema.media.id,
                     url: schema.media.url,
+                    provider: schema.media.provider,
+                    object_key: schema.media.object_key,
                     url_thumb: schema.media.url_thumb,
                     url_medium: schema.media.url_medium,
                     url_large: schema.media.url_large,
@@ -81,15 +83,16 @@ export async function GET(request: NextRequest) {
                 .from(schema.media)
                 .where(inArray(schema.media.id, coverIds));
 
+            const requestOrigin = new URL(request.url).origin;
             for (const row of coverRows) {
-                const urls = resolveMediaUrls(row.url, env, {
-                    url_thumb: row.url_thumb,
-                    url_medium: row.url_medium,
-                    url_large: row.url_large,
-                });
+                const urls = resolveMediaOutputUrls(env, {
+                    url: row.url,
+                    provider: row.provider,
+                    object_key: row.object_key,
+                }, requestOrigin);
                 coverMap.set(row.id, {
                     id: row.id,
-                    url: row.url,
+                    url: urls.url || row.url,
                     url_medium: urls.url_medium || undefined,
                     url_thumb: urls.url_thumb || undefined,
                 });

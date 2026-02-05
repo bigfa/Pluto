@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/admin/auth';
 import { getEnv } from '@/lib/env';
 import { getDb } from '@/db/client';
 import { getMediaById, updateMedia, deleteMedia } from '@/services/admin/mediaServices';
-import { resolveMediaUrls } from '@/lib/mediaTransforms';
+import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
 
 export async function GET(
     request: NextRequest,
@@ -22,15 +22,17 @@ export async function GET(
     try {
         const data = await getMediaById(db, schema, id);
         if (!data) return NextResponse.json({ err: 'Not found' }, { status: 404 });
-        const urls = resolveMediaUrls(data.url, env, {
-            url_thumb: data.url_thumb,
-            url_medium: data.url_medium,
-            url_large: data.url_large,
-        });
+        const requestOrigin = new URL(request.url).origin;
+        const urls = resolveMediaOutputUrls(env, {
+            url: data.url,
+            provider: data.provider,
+            object_key: data.object_key,
+        }, requestOrigin);
         return NextResponse.json({
             ok: true,
             data: {
                 ...data,
+                url: urls.url || data.url,
                 url_thumb: urls.url_thumb,
                 url_medium: urls.url_medium,
                 url_large: urls.url_large,

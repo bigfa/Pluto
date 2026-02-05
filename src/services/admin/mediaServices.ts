@@ -10,7 +10,7 @@ import { eq, desc, asc, like, and, or, sql, inArray, count } from 'drizzle-orm';
 import ExifReader from 'exifreader';
 import type { Env } from '@/lib/env';
 import type { MediaFile, MediaCreate, MediaUpdate, MediaProvider } from '@/types/admin';
-import { putObject, publicUrlForKey } from './mediaProviders';
+import { putObject } from './mediaProviders';
 
 // Helper to safely get EXIF value from multiple possible locations
 function safeGet(exif: any, tags: string[], groups: string[] = ['exif', 'file', 'ifd0']): string | undefined {
@@ -661,7 +661,6 @@ export async function createMediaFromFile(options: {
     tags?: string[];
     category_ids?: string[];
     visibility?: string;
-    requestOrigin?: string;
 }): Promise<MediaFile> {
     const {
         env,
@@ -675,7 +674,6 @@ export async function createMediaFromFile(options: {
         tags,
         category_ids,
         visibility = 'public',
-        requestOrigin,
     } = options;
 
     const arrayBuffer = await file.arrayBuffer();
@@ -773,8 +771,8 @@ export async function createMediaFromFile(options: {
     // ---- Upload to storage ----
     await putObject(env, provider, objectKey, arrayBuffer, contentType);
 
-    // ---- Generate public URL ----
-    const url = publicUrlForKey(env, provider, objectKey, requestOrigin);
+    // ---- Store URL as object key to keep domain flexible ----
+    const url = objectKey;
 
     // ---- Create database record ----
     let locationName: string | undefined;

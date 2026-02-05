@@ -58,6 +58,8 @@ async function fetchCoverMedia(db: any, schema: any, coverMediaId: string | null
     return {
         id: m.id,
         url: m.url,
+        provider: m.provider,
+        object_key: m.object_key,
         url_thumb: m.url_thumb || undefined,
         url_medium: m.url_medium || undefined,
         url_large: m.url_large || undefined,

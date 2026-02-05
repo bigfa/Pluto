@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/admin/auth';
 import { getEnv } from '@/lib/env';
 import { getDb } from '@/db/client';
 import { getAlbumById, updateAlbum, deleteAlbum } from '@/services/admin/albumServices';
-import { resolveMediaUrls } from '@/lib/mediaTransforms';
+import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
 
 export async function GET(
     request: NextRequest,
@@ -23,12 +23,13 @@ export async function GET(
         const data = await getAlbumById(db, schema, id);
         if (!data) return NextResponse.json({ err: 'Not found' }, { status: 404 });
 
+        const requestOrigin = new URL(request.url).origin;
         const cover = data.cover_media?.url
-            ? resolveMediaUrls(data.cover_media.url, env, {
-                url_thumb: data.cover_media.url_thumb,
-                url_medium: data.cover_media.url_medium,
-                url_large: data.cover_media.url_large,
-            })
+            ? resolveMediaOutputUrls(env, {
+                url: data.cover_media.url,
+                provider: data.cover_media.provider,
+                object_key: data.cover_media.object_key,
+            }, requestOrigin)
             : null;
 
         const normalized = cover && data.cover_media
@@ -36,6 +37,7 @@ export async function GET(
                 ...data,
                 cover_media: {
                     ...data.cover_media,
+                    url: cover.url || data.cover_media.url,
                     url_thumb: cover.url_thumb,
                     url_medium: cover.url_medium,
                     url_large: cover.url_large,

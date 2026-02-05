@@ -137,6 +137,10 @@ services:
 
 访问：`http://localhost:8080`
 
+说明：
+- 当 `MEDIA_LOCAL_PUBLIC_URL` 是路径（如 `/uploads`）时，系统会使用 `NEXT_PUBLIC_BASE_URL` 拼接成完整访问地址。
+- 如果通过 Nginx 访问却仍显示 `http://localhost:3000`，请确认 `NEXT_PUBLIC_BASE_URL` 已设置为外部地址（如 `http://localhost:8080`）。
+
 > `nginx/nginx.conf` 在项目中已提供完整示例。
 
 ## 6. 更新镜像

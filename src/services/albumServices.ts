@@ -9,14 +9,12 @@ import { eq, desc, like, and, sql, or, inArray } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import type { Album, AlbumListResponse, AlbumDetailResponse, AlbumListParams } from '@/types/album';
 import type { Media } from '@/types/media';
+import type { MediaProvider } from '@/types/admin';
 import { getApiBaseUrl } from '@/lib/utils';
-import { resolveMediaUrls } from '@/lib/mediaTransforms';
+import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
+import type { Env } from '@/lib/env';
 
 type MediaRow = typeof schema.media.$inferSelect;
-
-interface Env {
-    DB?: D1Database;
-}
 
 // ============ D1 Database Implementation ============
 
@@ -88,14 +86,14 @@ async function listAlbumsFromDb(
     ]);
 
     for (const row of coverRows) {
-        const urls = resolveMediaUrls(row.url, env, {
-            url_thumb: row.url_thumb,
-            url_medium: row.url_medium,
-            url_large: row.url_large,
+        const urls = resolveMediaOutputUrls(env, {
+            url: row.url,
+            provider: row.provider as MediaProvider | null | undefined,
+            object_key: row.object_key,
         });
         coverMap.set(row.id, {
             id: row.id,
-            url: row.url,
+            url: urls.url || row.url,
             url_medium: urls.url_medium || undefined,
             url_thumb: urls.url_thumb || undefined,
         });
@@ -171,10 +169,10 @@ async function getAlbumByIdFromDb(
             .limit(1);
 
         if (coverResults[0]) {
-            const urls = resolveMediaUrls(coverResults[0].url, env, {
-                url_thumb: coverResults[0].url_thumb,
-                url_medium: coverResults[0].url_medium,
-                url_large: coverResults[0].url_large,
+            const urls = resolveMediaOutputUrls(env, {
+                url: coverResults[0].url,
+                provider: coverResults[0].provider as MediaProvider | null | undefined,
+                object_key: coverResults[0].object_key,
             });
             cover_media = {
                 ...coverResults[0],
@@ -183,6 +181,7 @@ async function getAlbumByIdFromDb(
                 tags: [],
                 likes: coverResults[0].likes || 0,
                 liked: false,
+                url: urls.url || coverResults[0].url,
                 url_thumb: urls.url_thumb,
                 url_medium: urls.url_medium,
                 url_large: urls.url_large,
@@ -274,10 +273,12 @@ async function getAlbumMediaFromDb(
     }
 
     const mediaIds = albumMediaLinks.map((link) => link.media_id);
-    const mediaRows = await db
+        const mediaRows = await db
         .select({
             id: schema.media.id,
             url: schema.media.url,
+            provider: schema.media.provider,
+            object_key: schema.media.object_key,
             url_thumb: schema.media.url_thumb,
             url_medium: schema.media.url_medium,
             url_large: schema.media.url_large,
@@ -310,14 +311,14 @@ async function getAlbumMediaFromDb(
         .map((link) => {
             const m = mediaMap.get(link.media_id);
             if (!m) return null;
-            const urls = resolveMediaUrls(m.url, env, {
-                url_thumb: m.url_thumb,
-                url_medium: m.url_medium,
-                url_large: m.url_large,
+            const urls = resolveMediaOutputUrls(env, {
+                url: m.url,
+                provider: m.provider as MediaProvider | null | undefined,
+                object_key: m.object_key,
             });
             return {
                 id: m.id,
-                url: m.url,
+                url: urls.url || m.url,
                 url_thumb: urls.url_thumb,
                 url_medium: urls.url_medium,
                 url_large: urls.url_large,

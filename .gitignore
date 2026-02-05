@@ -49,3 +49,8 @@ next-env.d.ts
 .tef_dist/*
   
 .wrangler/
+
+
+# local/runtime data directories
+/data/
+/data-*/

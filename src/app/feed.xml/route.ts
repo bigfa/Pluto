@@ -4,6 +4,7 @@ import { desc, eq, or, sql } from 'drizzle-orm';
 import { getEnv } from '@/lib/env';
 import { getDb } from '@/db/client';
 import { fetchAlbums, fetchAlbumMedia } from '@/lib/api';
+import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
 
 interface FeedAlbum {
     id: string;
@@ -48,13 +49,25 @@ async function getAlbumsFromDb(): Promise<FeedAlbum[] | null> {
                         const results = await db
                             .select({
                                 url: schema.media.url,
+                                provider: schema.media.provider,
+                                object_key: schema.media.object_key,
                                 alt: schema.media.alt,
                                 filename: schema.media.filename,
                             })
                             .from(schema.media)
                             .where(eq(schema.media.id, link.media_id))
                             .limit(1);
-                        return results[0] || null;
+                        if (!results[0]) return null;
+                        const urls = resolveMediaOutputUrls(env, {
+                            url: results[0].url,
+                            provider: results[0].provider,
+                            object_key: results[0].object_key,
+                        });
+                        return {
+                            url: urls.url || results[0].url,
+                            alt: results[0].alt,
+                            filename: results[0].filename,
+                        };
                     })
                 ).then(results => results.filter(Boolean));
 

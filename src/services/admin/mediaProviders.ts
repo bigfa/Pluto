@@ -97,7 +97,8 @@ function publicUrlLocal(env: Env, key: string, requestOrigin?: string): string {
     if (baseFromEnv) {
         const base = baseFromEnv.trim();
         if (base.startsWith('/')) {
-            const origin = requestOrigin ? requestOrigin.replace(/\/$/, '') : '';
+            const configuredOrigin = env.NEXT_PUBLIC_BASE_URL?.trim();
+            const origin = (configuredOrigin || requestOrigin || '').replace(/\/$/, '');
             const pathBase = base.replace(/\/$/, '');
             const prefix = origin ? `${origin}${pathBase}` : pathBase;
             return `${prefix.replace(/\/$/, '')}/${sanitizedKey}`;

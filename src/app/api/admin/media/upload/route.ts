@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
                     db,
                     schema,
                     file,
-                    requestOrigin: new URL(request.url).origin,
                     provider,
                     title,
                     alt,

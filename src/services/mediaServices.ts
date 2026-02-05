@@ -8,12 +8,10 @@ import { drizzle } from 'drizzle-orm/d1';
 import { eq, desc, like, and, sql, or, inArray } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import type { Media, MediaListParams, MediaListResponse, CategoriesResponse, Category } from '@/types/media';
+import type { MediaProvider } from '@/types/admin';
 import { getApiBaseUrl } from '@/lib/utils';
-import { resolveMediaUrls } from '@/lib/mediaTransforms';
-
-interface Env {
-    DB?: D1Database;
-}
+import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
+import type { Env } from '@/lib/env';
 
 // ============ D1 Database Implementation ============
 
@@ -114,13 +112,15 @@ async function listMediaFromDb(
         ? desc(schema.media.likes)
         : desc(dateSort);
 
-    const results = await db
-        .select({
-            id: schema.media.id,
-            url: schema.media.url,
-            url_thumb: schema.media.url_thumb,
-            url_medium: schema.media.url_medium,
-            url_large: schema.media.url_large,
+        const results = await db
+            .select({
+                id: schema.media.id,
+                url: schema.media.url,
+                provider: schema.media.provider,
+                object_key: schema.media.object_key,
+                url_thumb: schema.media.url_thumb,
+                url_medium: schema.media.url_medium,
+                url_large: schema.media.url_large,
             filename: schema.media.filename,
             alt: schema.media.alt,
             width: schema.media.width,
@@ -188,15 +188,15 @@ async function listMediaFromDb(
     const mediaWithDetails: Media[] = results.map((m) => {
         const categories = categoriesByMedia.get(m.id) || [];
         const tags = tagsByMedia.get(m.id) || [];
-        const urls = resolveMediaUrls(m.url, env, {
-            url_thumb: m.url_thumb,
-            url_medium: m.url_medium,
-            url_large: m.url_large,
+        const urls = resolveMediaOutputUrls(env, {
+            url: m.url,
+            provider: m.provider as MediaProvider | null | undefined,
+            object_key: m.object_key,
         });
 
         return {
             id: m.id,
-            url: m.url,
+            url: urls.url || m.url,
             url_thumb: urls.url_thumb,
             url_medium: urls.url_medium,
             url_large: urls.url_large,

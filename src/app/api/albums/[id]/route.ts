@@ -4,7 +4,7 @@ import { getEnv } from '@/lib/env';
 import { getDb } from '@/db/client';
 import type { Album } from '@/types/album';
 import { parseCookie, cookieName, verifySessionToken } from '@/lib/admin/session';
-import { resolveMediaUrls } from '@/lib/mediaTransforms';
+import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
 
 
 
@@ -97,6 +97,8 @@ export async function GET(request: NextRequest, { params }: Params) {
                 .select({
                     id: schema.media.id,
                     url: schema.media.url,
+                    provider: schema.media.provider,
+                    object_key: schema.media.object_key,
                     url_thumb: schema.media.url_thumb,
                     url_medium: schema.media.url_medium,
                     url_large: schema.media.url_large,
@@ -106,14 +108,15 @@ export async function GET(request: NextRequest, { params }: Params) {
                 .limit(1);
 
             if (coverResults[0]) {
-                const urls = resolveMediaUrls(coverResults[0].url, env, {
-                    url_thumb: coverResults[0].url_thumb,
-                    url_medium: coverResults[0].url_medium,
-                    url_large: coverResults[0].url_large,
-                });
+                const requestOrigin = new URL(request.url).origin;
+                const urls = resolveMediaOutputUrls(env, {
+                    url: coverResults[0].url,
+                    provider: coverResults[0].provider,
+                    object_key: coverResults[0].object_key,
+                }, requestOrigin);
                 cover_media = {
                     id: coverResults[0].id,
-                    url: coverResults[0].url,
+                    url: urls.url || coverResults[0].url,
                     url_medium: urls.url_medium || undefined,
                     url_thumb: urls.url_thumb || undefined,
                 };

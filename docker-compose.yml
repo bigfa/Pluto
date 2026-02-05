@@ -8,9 +8,9 @@ services:
       MEDIA_DEFAULT_PROVIDER: local
       MEDIA_LOCAL_DIR: /data/uploads
       MEDIA_LOCAL_PUBLIC_URL: /uploads
-      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_BASE_URL: http://localhost:8080
       ADMIN_USER: admin
-      ADMIN_PASS_HASH: pbkdf2:100000:<salt_hex>:<hash_hex>
+      ADMIN_PASS: 19890312
       SESSION_SECRET: change-me-to-a-long-random-string
     volumes:
       - ./data:/data

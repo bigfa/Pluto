@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/admin/auth';
 import { getEnv } from '@/lib/env';
 import { getDb } from '@/db/client';
 import { getAlbumMedia, addMediaToAlbum, removeMediaFromAlbum } from '@/services/admin/albumServices';
-import { resolveMediaUrls } from '@/lib/mediaTransforms';
+import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
 
 export async function GET(
     request: NextRequest,
@@ -25,14 +25,16 @@ export async function GET(
         const pageSize = Number(url.searchParams.get('pageSize')) || 20;
 
         const data = await getAlbumMedia(db, schema, id, { page, pageSize });
+        const requestOrigin = new URL(request.url).origin;
         const media = data.media.map((item) => {
-            const urls = resolveMediaUrls(item.url, env, {
-                url_thumb: item.url_thumb,
-                url_medium: item.url_medium,
-                url_large: item.url_large,
-            });
+            const urls = resolveMediaOutputUrls(env, {
+                url: item.url,
+                provider: item.provider,
+                object_key: item.object_key,
+            }, requestOrigin);
             return {
                 ...item,
+                url: urls.url || item.url,
                 url_thumb: urls.url_thumb,
                 url_medium: urls.url_medium,
                 url_large: urls.url_large,

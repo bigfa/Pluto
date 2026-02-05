@@ -3,7 +3,7 @@ import { requireAdmin } from '@/lib/admin/auth';
 import { getEnv } from '@/lib/env';
 import { getDb } from '@/db/client';
 import { listMedia } from '@/services/admin/mediaServices';
-import { resolveMediaUrls } from '@/lib/mediaTransforms';
+import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
 
 export async function GET(request: NextRequest) {
     const auth = await requireAdmin(request);
@@ -23,14 +23,16 @@ export async function GET(request: NextRequest) {
         const pageSize = Number(url.searchParams.get('pageSize')) || 20;
 
         const data = await listMedia(db, schema, { q, category, tag, page, pageSize });
+        const requestOrigin = new URL(request.url).origin;
         const results = data.results.map((item) => {
-            const urls = resolveMediaUrls(item.url, env, {
-                url_thumb: item.url_thumb,
-                url_medium: item.url_medium,
-                url_large: item.url_large,
-            });
+            const urls = resolveMediaOutputUrls(env, {
+                url: item.url,
+                provider: item.provider,
+                object_key: item.object_key,
+            }, requestOrigin);
             return {
                 ...item,
+                url: urls.url || item.url,
                 url_thumb: urls.url_thumb,
                 url_medium: urls.url_medium,
                 url_large: urls.url_large,

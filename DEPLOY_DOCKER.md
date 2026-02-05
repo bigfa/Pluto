@@ -137,6 +137,10 @@ services:
 
 Access: `http://localhost:8080`
 
+Note:
+- When `MEDIA_LOCAL_PUBLIC_URL` is a path (e.g. `/uploads`), the app will use `NEXT_PUBLIC_BASE_URL` to build absolute media URLs.
+- If you see URLs pointing to `http://localhost:3000` behind Nginx, ensure `NEXT_PUBLIC_BASE_URL` is set to your public address (e.g. `http://localhost:8080`).
+
 > A full `nginx/nginx.conf` example is included in the repo.
 
 ## 6. Update Image
