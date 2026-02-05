@@ -137,30 +137,34 @@ function HomeContent({
 
     const locale = SITE_CONFIG.i18n.defaultLocale || 'en';
 
-    const groupedMedia = useMemo(() => {
-        const groups = new Map<string, { label: string; items: Media[] }>();
+        const groupedMedia = useMemo(() => {
+            const groups = new Map<string, { label: string; items: Media[] }>();
 
-        const parseMediaDate = (value?: string | null) => {
-            if (!value) return null;
-            // Handle EXIF format: YYYY:MM:DD HH:MM:SS
-            if (/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(value)) {
-                const [datePart, timePart] = value.split(' ');
-                const [y, m, d] = datePart.split(':');
-                return new Date(`${y}-${m}-${d}T${timePart}Z`);
-            }
-            const parsed = new Date(value);
-            return Number.isNaN(parsed.getTime()) ? null : parsed;
-        };
+            const parseMediaDate = (value?: string | null) => {
+                if (!value) return null;
+                // Handle EXIF format: YYYY:MM:DD HH:MM:SS
+                if (/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(value)) {
+                    const [datePart, timePart] = value.split(' ');
+                    const [y, m, d] = datePart.split(':');
+                    return new Date(`${y}-${m}-${d}T${timePart}Z`);
+                }
+                const parsed = new Date(value);
+                return Number.isNaN(parsed.getTime()) ? null : parsed;
+            };
 
-        for (const item of media || []) {
-            const rawDate = item.datetime_original || item.created_at;
-            const date = parseMediaDate(rawDate);
-            const key = date && !Number.isNaN(date.getTime())
-                ? date.toISOString().slice(0, 10)
-                : 'unknown';
-            const label = date && !Number.isNaN(date.getTime())
-                ? new Intl.DateTimeFormat(locale, { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date)
-                : t('unknown_date');
+            for (const item of media || []) {
+                const rawDate = item.datetime_original || item.created_at;
+                const date = parseMediaDate(rawDate);
+                const currentYear = new Date().getFullYear();
+                const key = date && !Number.isNaN(date.getTime())
+                    ? date.toISOString().slice(0, 10)
+                    : 'unknown';
+                const label = date && !Number.isNaN(date.getTime())
+                    ? new Intl.DateTimeFormat(locale, date.getFullYear() === currentYear
+                        ? { month: 'short', day: '2-digit' }
+                        : { month: 'short', day: '2-digit', year: 'numeric' }
+                    ).format(date)
+                    : t('unknown_date');
 
             if (!groups.has(key)) {
                 groups.set(key, { label, items: [] });
@@ -269,7 +273,7 @@ function HomeContent({
                     ) : (
                         groupedMedia.map((group, index) => (
                             <div key={`${group.label}-${index}`} className="mb-10">
-                                <div className="text-sm font-medium text-muted-foreground mb-4">
+                                <div className="text-[1.25rem] font-medium text-foreground/90 mb-4">
                                     {group.label}
                                 </div>
                                 <MediaGrid
