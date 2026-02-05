@@ -270,6 +270,14 @@ function HomeContent({
                             onLike={SITE_CONFIG.features.enableLikes ? handleLike : undefined}
                             masonry={true}
                         />
+                    ) : sort === 'likes' ? (
+                        <MediaGrid
+                            media={media || []}
+                            loading={false}
+                            onItemClick={handleMediaClick}
+                            onLike={SITE_CONFIG.features.enableLikes ? handleLike : undefined}
+                            masonry={true}
+                        />
                     ) : (
                         groupedMedia.map((group, index) => (
                             <div key={`${group.label}-${index}`} className="mb-10">
