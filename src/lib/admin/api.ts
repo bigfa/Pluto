@@ -336,6 +336,8 @@ export interface AlbumItem {
     views?: number;
     slug?: string;
     tags?: string[];
+    categories?: { id: string; name: string; slug: string }[];
+    category_ids?: string[];
     is_protected?: boolean;
     status?: 'draft' | 'published';
 }
@@ -347,18 +349,60 @@ export async function listAlbums(page: number = 1, q: string = '', tag: string =
     return apiFetch(`/api/admin/albums?${query.toString()}`);
 }
 
-export async function createAlbum(data: { title: string; description?: string; cover_media_id?: string; slug?: string; tags?: string[]; password?: string; status?: 'draft' | 'published' }): Promise<{ ok: boolean; data: AlbumItem }> {
+export async function createAlbum(data: { title: string; description?: string; cover_media_id?: string; slug?: string; tags?: string[]; category_ids?: string[]; password?: string; status?: 'draft' | 'published' }): Promise<{ ok: boolean; data: AlbumItem }> {
     return apiFetch('/api/admin/albums', {
         method: 'POST',
         body: JSON.stringify(data),
     });
 }
 
-export async function updateAlbum(id: string, data: { title?: string; description?: string; cover_media_id?: string; slug?: string; tags?: string[]; password?: string; status?: 'draft' | 'published' }): Promise<{ ok: boolean; data: AlbumItem }> {
+export async function updateAlbum(id: string, data: { title?: string; description?: string; cover_media_id?: string; slug?: string; tags?: string[]; category_ids?: string[]; password?: string; status?: 'draft' | 'published' }): Promise<{ ok: boolean; data: AlbumItem }> {
     return apiFetch(`/api/admin/albums/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
     });
+}
+
+// Album Categories API
+export interface AlbumCategory {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string;
+    display_order: number;
+    show_in_frontend?: number | boolean;
+    media_count: number;
+    created_at: string;
+}
+
+export async function listAlbumCategories(): Promise<{ ok: boolean; categories: AlbumCategory[] }> {
+    return apiFetch('/api/admin/albums/categories');
+}
+
+export async function createAlbumCategory(data: {
+    name: string;
+    slug?: string;
+    description?: string;
+    show_in_frontend?: boolean;
+}): Promise<{ ok: boolean; data: AlbumCategory }> {
+    return apiFetch('/api/admin/albums/categories', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function updateAlbumCategory(
+    id: string,
+    data: { name?: string; slug?: string; description?: string; show_in_frontend?: boolean }
+): Promise<{ ok: boolean; data: AlbumCategory }> {
+    return apiFetch(`/api/admin/albums/categories/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function deleteAlbumCategory(id: string): Promise<void> {
+    await apiFetch(`/api/admin/albums/categories/${id}`, { method: 'DELETE' });
 }
 
 export async function deleteAlbum(id: string): Promise<void> {

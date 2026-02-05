@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
 
     try {
         const body: any = await request.json();
-        const { title, description, cover_media_id, slug, tags, password, status } = body;
-        const data = await createAlbum(db, schema, { title, description, cover_media_id, slug, tags, password, status });
+        const { title, description, cover_media_id, slug, tags, password, status, category_ids } = body;
+        const data = await createAlbum(db, schema, { title, description, cover_media_id, slug, tags, password, status, category_ids });
         return NextResponse.json({ ok: true, data });
     } catch (e) {
         return NextResponse.json({ err: String(e) }, { status: 500 });

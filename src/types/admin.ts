@@ -85,6 +85,7 @@ export interface AlbumCreate {
     cover_media_id?: string;
     slug?: string;
     tags?: string[];
+    category_ids?: string[];
     password?: string;
     status?: 'draft' | 'published';
 }
@@ -95,6 +96,7 @@ export interface AlbumUpdate {
     cover_media_id?: string;
     slug?: string;
     tags?: string[];
+    category_ids?: string[];
     password?: string;
     status?: 'draft' | 'published';
 }

@@ -5,11 +5,13 @@ import { Album, AlbumListResponse } from '@/types/album';
 import { fetchAlbums } from '@/lib/api';
 import { checkAuth } from '@/lib/admin/api';
 import AlbumCard from '@/components/AlbumCard';
+import AlbumCategoryTabs from '@/components/AlbumCategoryTabs';
 import Pagination from '@/components/Pagination';
 import styles from './page.module.scss';
 import Link from 'next/link';
 import RssIcon from '@/components/RssIcon';
 import { t } from '@/lib/i18n';
+import { useSearchParams } from 'next/navigation';
 
 interface AlbumsClientProps {
     initialAlbums?: Album[];
@@ -17,6 +19,7 @@ interface AlbumsClientProps {
     initialPage?: number;
     initialPageSize?: number;
     initialLoaded?: boolean;
+    initialCategory?: string | null;
 }
 
 export default function AlbumsClient({
@@ -25,7 +28,10 @@ export default function AlbumsClient({
     initialPage = 1,
     initialPageSize = 20,
     initialLoaded = false,
+    initialCategory = null,
 }: AlbumsClientProps) {
+    const searchParams = useSearchParams();
+    const categoryFromUrl = searchParams.get('category');
     // const router = useRouter(); // Removed unused router
     const [albums, setAlbums] = useState<Album[]>(initialAlbums);
     const [loading, setLoading] = useState(!initialLoaded);
@@ -33,6 +39,7 @@ export default function AlbumsClient({
     const [page, setPage] = useState(initialPage);
     const [total, setTotal] = useState(initialTotal);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory ?? categoryFromUrl);
     const pageSize = initialPageSize;
     const skipInitialRef = useRef(initialLoaded);
 
@@ -40,7 +47,7 @@ export default function AlbumsClient({
         setLoading(true);
         setError(null);
         try {
-            const response: AlbumListResponse = await fetchAlbums({ page, pageSize });
+            const response: AlbumListResponse = await fetchAlbums({ page, pageSize, category: selectedCategory || undefined });
             if (response.ok) {
                 setAlbums(response.albums || []);
                 setTotal(response.total || 0);
@@ -53,7 +60,7 @@ export default function AlbumsClient({
         } finally {
             setLoading(false);
         }
-    }, [page, pageSize]);
+    }, [page, pageSize, selectedCategory]);
 
     useEffect(() => {
         if (skipInitialRef.current) {
@@ -74,23 +81,32 @@ export default function AlbumsClient({
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    const handleCategoryChange = (category: string | null) => {
+        setSelectedCategory(category);
+        setPage(1);
+        const url = new URL(window.location.href);
+        if (category) {
+            url.searchParams.set('category', category);
+        } else {
+            url.searchParams.delete('category');
+        }
+        window.history.pushState({}, '', url);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const totalPages = Math.ceil(total / pageSize);
 
     return (
         <div className={styles['albums-page']}>
             <div className={styles['albums-page__header']}>
-                <div className={styles['albums-page__title-wrapper']}>
-                    <h1 className={styles['albums-page__title']}>{t('albums_title')}</h1>
-                    <Link
-                        href="/feed.xml"
-                        target="_blank"
-                        className={styles['albums-page__rss-link']}
-                        title={t('nav_rss')}
-                    >
-                        <RssIcon size={20} />
-                    </Link>
-                </div>
-                <p className={styles['albums-page__subtitle']}>{t('albums_subtitle')}</p>
+                <Link
+                    href="/feed.xml"
+                    target="_blank"
+                    className={styles['albums-page__rss-link']}
+                    title={t('nav_rss')}
+                >
+                    <RssIcon size={20} />
+                </Link>
             </div>
 
             {error && (
@@ -98,6 +114,13 @@ export default function AlbumsClient({
                     <p>{error}</p>
                 </div>
             )}
+
+            <div className="mb-6">
+                <AlbumCategoryTabs
+                    selectedCategory={selectedCategory}
+                    onCategoryChange={handleCategoryChange}
+                />
+            </div>
 
             {loading ? (
                 <div className={styles['albums-page__grid']}>

@@ -43,6 +43,51 @@ async function setAlbumTags(db: any, schema: any, albumId: string, tags: string[
     }
 }
 
+async function getAlbumCategories(
+    db: any,
+    schema: any,
+    albumId: string,
+): Promise<{ id: string; name: string; slug: string }[]> {
+    const rows = await db
+        .select({
+            id: schema.albumCategories.id,
+            name: schema.albumCategories.name,
+            slug: schema.albumCategories.slug,
+        })
+        .from(schema.albumCategoryLinks)
+        .innerJoin(
+            schema.albumCategories,
+            eq(schema.albumCategoryLinks.category_id, schema.albumCategories.id),
+        )
+        .where(eq(schema.albumCategoryLinks.album_id, albumId));
+
+    return rows.map((row: any) => ({
+        id: row.id,
+        name: row.name,
+        slug: row.slug || row.id,
+    }));
+}
+
+async function setAlbumCategories(
+    db: any,
+    schema: any,
+    albumId: string,
+    categoryIds: string[],
+): Promise<void> {
+    await db
+        .delete(schema.albumCategoryLinks)
+        .where(eq(schema.albumCategoryLinks.album_id, albumId));
+
+    if (categoryIds.length > 0) {
+        await db.insert(schema.albumCategoryLinks).values(
+            categoryIds.map((categoryId) => ({
+                album_id: albumId,
+                category_id: categoryId,
+            })),
+        );
+    }
+}
+
 async function fetchCoverMedia(db: any, schema: any, coverMediaId: string | null): Promise<any | undefined> {
     if (!coverMediaId) return undefined;
 
@@ -73,6 +118,7 @@ async function fetchCoverMedia(db: any, schema: any, coverMediaId: string | null
 
 async function albumRowToResponse(db: any, schema: any, album: any): Promise<any> {
     const tags = await getAlbumTags(db, schema, album.id);
+    const categories = await getAlbumCategories(db, schema, album.id);
     const cover_media = await fetchCoverMedia(db, schema, album.cover_media_id);
 
     return {
@@ -89,6 +135,8 @@ async function albumRowToResponse(db: any, schema: any, album: any): Promise<any
         view_count: album.view_count || 0,
         likes: album.likes || 0,
         tags,
+        categories,
+        category_ids: categories.map((c) => c.id),
         created_at: album.created_at,
         updated_at: album.updated_at,
     };
@@ -101,6 +149,7 @@ interface ListAlbumsOptions {
     pageSize?: number;
     includeDrafts?: boolean;
     search?: string;
+    category?: string;
 }
 
 /**
@@ -117,7 +166,7 @@ export async function listAlbums(
     pageSize: number;
     totalPages: number;
 }> {
-    const { page = 1, pageSize = 20, includeDrafts = false, search } = options;
+    const { page = 1, pageSize = 20, includeDrafts = false, search, category } = options;
     const offset = (page - 1) * pageSize;
     const conditions: any[] = [];
 
@@ -139,6 +188,23 @@ export async function listAlbums(
                 like(schema.albums.description, `%${search}%`),
             ),
         );
+    }
+
+    if (category) {
+        const categoryLinks = await db
+            .select({ album_id: schema.albumCategoryLinks.album_id })
+            .from(schema.albumCategoryLinks)
+            .innerJoin(
+                schema.albumCategories,
+                eq(schema.albumCategoryLinks.category_id, schema.albumCategories.id),
+            )
+            .where(or(eq(schema.albumCategories.slug, category), eq(schema.albumCategories.id, category)));
+
+        const albumIds = categoryLinks.map((l: any) => l.album_id);
+        if (albumIds.length === 0) {
+            return { albums: [], total: 0, page, pageSize, totalPages: 0 };
+        }
+        conditions.push(inArray(schema.albums.id, albumIds));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -232,6 +298,10 @@ export async function createAlbum(
         await setAlbumTags(db, schema, id, data.tags);
     }
 
+    if (data.category_ids && data.category_ids.length > 0) {
+        await setAlbumCategories(db, schema, id, data.category_ids);
+    }
+
     return getAlbumById(db, schema, id);
 }
 
@@ -269,6 +339,10 @@ export async function updateAlbum(
         await setAlbumTags(db, schema, id, changes.tags);
     }
 
+    if (changes.category_ids !== undefined) {
+        await setAlbumCategories(db, schema, id, changes.category_ids);
+    }
+
     return getAlbumById(db, schema, id);
 }
 
@@ -292,6 +366,10 @@ export async function deleteAlbum(
     await db
         .delete(schema.albumTags)
         .where(eq(schema.albumTags.album_id, id));
+
+    await db
+        .delete(schema.albumCategoryLinks)
+        .where(eq(schema.albumCategoryLinks.album_id, id));
 
     // Delete album OTPs
     await db

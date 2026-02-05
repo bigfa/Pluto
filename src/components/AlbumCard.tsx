@@ -134,6 +134,15 @@ export default function AlbumCard({ album, isAdmin = false }: AlbumCardProps) {
             <div className={styles['album-card__info']}>
                 <h3 className={styles['album-card__title']}>{album.title}</h3>
                 <p className={styles['album-card__description']}>{album.description}</p>
+                {album.categories && album.categories.length > 0 && (
+                    <div className={styles['album-card__categories']}>
+                        {album.categories.map((category) => (
+                            <span key={category.id} className={styles['album-card__category']}>
+                                {category.name}
+                            </span>
+                        ))}
+                    </div>
+                )}
                 <span className={styles['album-card__date']}>{formatDate(album.created_at)}</span>
             </div>
             </Link>

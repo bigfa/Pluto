@@ -13,7 +13,10 @@ export interface Album {
         id: string;
         url: string;
         url_medium?: string;
+        url_thumb?: string;
     };
+    categories?: { id: string; name: string; slug: string }[];
+    category_ids?: string[];
     is_protected?: boolean;
 }
 
@@ -31,6 +34,7 @@ export interface AlbumDetailResponse {
 
 export interface AlbumListParams {
     q?: string;
+    category?: string;
     page?: number;
     pageSize?: number;
 }

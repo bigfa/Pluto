@@ -16,11 +16,13 @@ import {
 } from "@/components/ui/select";
 import {
     listAlbums, createAlbum, deleteAlbum as deleteAlbumApi,
-    type AlbumItem,
+    listAlbumCategories, type AlbumItem, type AlbumCategory,
 } from '@/lib/admin/api';
 import { Plus, Trash2, Edit, ChevronLeft, ChevronRight, Lock, Image as ImageIcon } from 'lucide-react';
 import { toast } from "sonner";
 import { t } from '@/lib/i18n';
+import { MultiSelect } from '@/components/ui/multi-select';
+import AlbumCategoryManager from '@/components/admin/albums/AlbumCategoryManager';
 
 export default function AlbumsPage() {
     const [albums, setAlbums] = useState<AlbumItem[]>([]);
@@ -39,6 +41,8 @@ export default function AlbumsPage() {
     const [newPassword, setNewPassword] = useState('');
     const [newStatus, setNewStatus] = useState<'draft' | 'published'>('published');
     const [creating, setCreating] = useState(false);
+    const [categories, setCategories] = useState<AlbumCategory[]>([]);
+    const [newCategoryIds, setNewCategoryIds] = useState<string[]>([]);
 
     // Delete confirm state
     const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -58,10 +62,20 @@ export default function AlbumsPage() {
         setLoading(false);
     }, [search]);
 
+    const loadCategories = useCallback(async () => {
+        try {
+            const res = await listAlbumCategories();
+            setCategories(res.categories || []);
+        } catch (e) {
+            console.error('Failed to load album categories:', e);
+        }
+    }, []);
+
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         loadAlbums(1);
-    }, [loadAlbums]);
+        loadCategories();
+    }, [loadAlbums, loadCategories]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,6 +94,7 @@ export default function AlbumsPage() {
                 tags: tagsArray.length > 0 ? tagsArray : undefined,
                 password: newPassword.trim() || undefined,
                 status: newStatus,
+                category_ids: newCategoryIds,
             });
             toast.success(t('admin_albums_create_success'));
             setShowCreate(false);
@@ -89,6 +104,7 @@ export default function AlbumsPage() {
             setNewTags('');
             setNewPassword('');
             setNewStatus('published');
+            setNewCategoryIds([]);
             loadAlbums(1);
         } catch (e) {
             console.error('Failed to create album:', e);
@@ -137,6 +153,11 @@ export default function AlbumsPage() {
             {/* Info */}
             <p className="text-sm text-muted-foreground">{t('admin_albums_total', { count: total })}</p>
 
+            <AlbumCategoryManager
+                categories={categories}
+                onRefresh={loadCategories}
+            />
+
             {/* Album List */}
             {loading ? (
                 <div className="text-center py-20 text-muted-foreground">{t('common_loading')}</div>
@@ -183,6 +204,15 @@ export default function AlbumsPage() {
                                         {album.tags.map(tag => (
                                             <span key={tag} className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded">
                                                 {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                                {album.categories && album.categories.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mb-3">
+                                        {album.categories.map(category => (
+                                            <span key={category.id} className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded">
+                                                {category.name}
                                             </span>
                                         ))}
                                     </div>
@@ -245,6 +275,16 @@ export default function AlbumsPage() {
                             <Label>{t('admin_album_field_tags')}</Label>
                             <Input value={newTags} onChange={(e) => setNewTags(e.target.value)}
                                 placeholder={t('admin_album_field_tags_placeholder')} className="mt-1" />
+                        </div>
+                        <div>
+                            <Label>{t('admin_album_field_categories')}</Label>
+                            <MultiSelect
+                                selected={newCategoryIds}
+                                onChange={setNewCategoryIds}
+                                options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                                placeholder={t('admin_album_field_categories_placeholder')}
+                                className="mt-1"
+                            />
                         </div>
                         <div>
                             <Label>{t('admin_album_field_password')}</Label>

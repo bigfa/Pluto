@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, or, sql } from 'drizzle-orm';
 import { getEnv } from '@/lib/env';
 import { getDb } from '@/db/client';
 import type { Album } from '@/types/album';
@@ -123,6 +123,27 @@ export async function GET(request: NextRequest, { params }: Params) {
             }
         }
 
+        const categoryResults: Array<{ id: string; name: string; slug: string | null }> = await db
+            .select({
+                id: schema.albumCategories.id,
+                name: schema.albumCategories.name,
+                slug: schema.albumCategories.slug,
+            })
+            .from(schema.albumCategoryLinks)
+            .innerJoin(
+                schema.albumCategories,
+                eq(schema.albumCategoryLinks.category_id, schema.albumCategories.id),
+            )
+            .where(
+                and(
+                    eq(schema.albumCategoryLinks.album_id, album.id),
+                    or(
+                        eq(schema.albumCategories.show_in_frontend, 1),
+                        sql`${schema.albumCategories.show_in_frontend} IS NULL`,
+                    ),
+                ),
+            );
+
         return NextResponse.json({
             ok: true,
             data: {
@@ -137,6 +158,8 @@ export async function GET(request: NextRequest, { params }: Params) {
                 views: album.view_count || 0,
                 slug: album.slug || undefined,
                 is_protected: isProtected,
+                categories: categoryResults.map((c) => ({ id: c.id, name: c.name, slug: c.slug || c.id })),
+                category_ids: categoryResults.map((c) => c.id),
             } as Album,
         });
     } catch (error) {

@@ -17,7 +17,12 @@ export const metadata: Metadata = {
     },
 };
 
-export default async function AlbumsPage() {
+interface PageProps {
+    searchParams: Promise<{ category?: string }>;
+}
+
+export default async function AlbumsPage({ searchParams }: PageProps) {
+    const { category } = await searchParams;
     const pageSize = 20;
     let initialAlbums: Album[] = [];
     let initialTotal = 0;
@@ -25,7 +30,7 @@ export default async function AlbumsPage() {
 
     try {
         const env = await getEnv();
-        const response = await listAlbums(env, { page: 1, pageSize });
+        const response = await listAlbums(env, { page: 1, pageSize, category: category || undefined });
         if (response.ok) {
             initialAlbums = response.albums || [];
             initialTotal = response.total || 0;
@@ -42,6 +47,7 @@ export default async function AlbumsPage() {
             initialPage={1}
             initialPageSize={pageSize}
             initialLoaded={initialLoaded}
+            initialCategory={category}
         />
     );
 }

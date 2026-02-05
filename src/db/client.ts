@@ -22,7 +22,12 @@ let sqliteClientCache: { path: string; client: { type: 'sqlite'; db: SqliteDbTyp
 function getNodeRequire(): NodeRequireFn | null {
     if (typeof process === 'undefined' || !process.versions?.node) return null;
     if (typeof __non_webpack_require__ === 'function') return __non_webpack_require__;
-    if (typeof require === 'function') return require as NodeRequireFn;
+    try {
+        const req = eval('require') as NodeRequireFn;
+        return typeof req === 'function' ? req : null;
+    } catch {
+        return null;
+    }
     return null;
 }
 

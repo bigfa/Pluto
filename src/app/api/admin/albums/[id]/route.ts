@@ -66,8 +66,8 @@ export async function PUT(
 
     try {
         const body: any = await request.json();
-        const { title, description, cover_media_id, slug, tags, password, status } = body;
-        const data = await updateAlbum(db, schema, id, { title, description, cover_media_id, slug, tags, password, status });
+        const { title, description, cover_media_id, slug, tags, password, status, category_ids } = body;
+        const data = await updateAlbum(db, schema, id, { title, description, cover_media_id, slug, tags, password, status, category_ids });
         return NextResponse.json({ ok: true, data });
     } catch (e) {
         return NextResponse.json({ err: String(e) }, { status: 500 });

@@ -71,6 +71,7 @@ export async function fetchAlbums(params: AlbumListParams = {}): Promise<AlbumLi
     const searchParams = new URLSearchParams();
 
     if (params.q) searchParams.set('q', params.q);
+    if (params.category) searchParams.set('category', params.category);
     if (params.page) searchParams.set('page', params.page.toString());
     if (params.pageSize) searchParams.set('pageSize', params.pageSize.toString());
 
@@ -78,6 +79,21 @@ export async function fetchAlbums(params: AlbumListParams = {}): Promise<AlbumLi
     const url = `${API_BASE_URL}/albums${queryString ? `?${queryString}` : ''}`;
 
     const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+export async function fetchAlbumCategories(): Promise<CategoriesResponse> {
+    const response = await fetch(`${API_BASE_URL}/albums/categories`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

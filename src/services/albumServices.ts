@@ -23,7 +23,7 @@ async function listAlbumsFromDb(
     env: Env,
     options: AlbumListParams = {}
 ): Promise<AlbumListResponse> {
-    const { page = 1, pageSize = 20, q } = options;
+    const { page = 1, pageSize = 20, q, category } = options;
     const offset = (page - 1) * pageSize;
 
     // Build where conditions - only published albums
@@ -41,6 +41,33 @@ async function listAlbumsFromDb(
                 like(schema.albums.description, `%${q}%`)
             )
         );
+    }
+
+    const categoryVisibilityCondition = or(
+        eq(schema.albumCategories.show_in_frontend, 1),
+        sql`${schema.albumCategories.show_in_frontend} IS NULL`,
+    );
+
+    if (category) {
+        const categoryLinks = await db
+            .select({ album_id: schema.albumCategoryLinks.album_id })
+            .from(schema.albumCategoryLinks)
+            .innerJoin(
+                schema.albumCategories,
+                eq(schema.albumCategoryLinks.category_id, schema.albumCategories.id),
+            )
+            .where(
+                and(
+                    or(eq(schema.albumCategories.slug, category), eq(schema.albumCategories.id, category)),
+                    categoryVisibilityCondition,
+                ),
+            );
+
+        const albumIdsByCategory = categoryLinks.map((l) => l.album_id);
+        if (albumIdsByCategory.length === 0) {
+            return { ok: true, albums: [], total: 0, totalPages: 0 };
+        }
+        conditions.push(inArray(schema.albums.id, albumIdsByCategory));
     }
 
     const whereClause = and(...conditions);
@@ -69,8 +96,9 @@ async function listAlbumsFromDb(
 
     const coverMap = new Map<string, { id: string; url: string; url_medium?: string; url_thumb?: string }>();
     const tagsByAlbum = new Map<string, string[]>();
+    const categoriesByAlbum = new Map<string, { id: string; name: string; slug: string }[]>();
 
-    const [coverRows, tagRows]: [MediaRow[], { album_id: string; tag: string }[]] = await Promise.all([
+    const [coverRows, tagRows, categoryRows]: [MediaRow[], { album_id: string; tag: string }[], { album_id: string; id: string; name: string; slug: string }[]] = await Promise.all([
         coverIds.length > 0
             ? db
                 .select()
@@ -82,6 +110,26 @@ async function listAlbumsFromDb(
                 .select({ album_id: schema.albumTags.album_id, tag: schema.albumTags.tag })
                 .from(schema.albumTags)
                 .where(inArray(schema.albumTags.album_id, albumIds))
+            : Promise.resolve([]),
+        albumIds.length > 0
+            ? db
+                .select({
+                    album_id: schema.albumCategoryLinks.album_id,
+                    id: schema.albumCategories.id,
+                    name: schema.albumCategories.name,
+                    slug: schema.albumCategories.slug,
+                })
+                .from(schema.albumCategoryLinks)
+                .innerJoin(
+                    schema.albumCategories,
+                    eq(schema.albumCategoryLinks.category_id, schema.albumCategories.id),
+                )
+                .where(
+                    and(
+                        inArray(schema.albumCategoryLinks.album_id, albumIds),
+                        categoryVisibilityCondition,
+                    ),
+                )
             : Promise.resolve([]),
     ]);
 
@@ -105,6 +153,12 @@ async function listAlbumsFromDb(
         tagsByAlbum.set(row.album_id, list);
     }
 
+    for (const row of categoryRows) {
+        const list = categoriesByAlbum.get(row.album_id) || [];
+        list.push({ id: row.id, name: row.name, slug: row.slug || row.id });
+        categoriesByAlbum.set(row.album_id, list);
+    }
+
     const albumsWithDetails: Album[] = results.map((album) => ({
         id: album.id,
         title: album.title,
@@ -118,6 +172,8 @@ async function listAlbumsFromDb(
         likes: album.likes || 0,
         slug: album.slug || undefined,
         tags: tagsByAlbum.get(album.id) || [],
+        categories: categoriesByAlbum.get(album.id) || [],
+        category_ids: (categoriesByAlbum.get(album.id) || []).map((c) => c.id),
         is_protected: !!album.password,
     }));
 
@@ -195,6 +251,27 @@ async function getAlbumByIdFromDb(
         .from(schema.albumTags)
         .where(eq(schema.albumTags.album_id, album.id));
 
+    const categoryResults = await db
+        .select({
+            id: schema.albumCategories.id,
+            name: schema.albumCategories.name,
+            slug: schema.albumCategories.slug,
+        })
+        .from(schema.albumCategoryLinks)
+        .innerJoin(
+            schema.albumCategories,
+            eq(schema.albumCategoryLinks.category_id, schema.albumCategories.id),
+        )
+        .where(
+            and(
+                eq(schema.albumCategoryLinks.album_id, album.id),
+                or(
+                    eq(schema.albumCategories.show_in_frontend, 1),
+                    sql`${schema.albumCategories.show_in_frontend} IS NULL`,
+                ),
+            ),
+        );
+
     return {
         ok: true,
         data: {
@@ -209,6 +286,8 @@ async function getAlbumByIdFromDb(
             views: album.view_count || 0,
             slug: album.slug || undefined,
             tags: tagResults.map(t => t.tag),
+            categories: categoryResults.map((c) => ({ id: c.id, name: c.name, slug: c.slug || c.id })),
+            category_ids: categoryResults.map((c) => c.id),
             is_protected: isProtected,
         } as Album,
     };

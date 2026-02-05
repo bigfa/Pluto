@@ -14,10 +14,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { MultiSelect } from '@/components/ui/multi-select';
 import {
     getAlbumById, updateAlbum, getAlbumMedia, addMediaToAlbum,
     removeMediaFromAlbum, generateAlbumOTP,
-    type AlbumItem, type MediaItem,
+    listAlbumCategories, type AlbumItem, type MediaItem, type AlbumCategory,
 } from '@/lib/admin/api';
 import { Save, ArrowLeft, Plus, Trash2, Image as ImageIcon, Copy, Link2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from "sonner";
@@ -40,6 +41,8 @@ export default function AlbumDetailPage() {
     const [status, setStatus] = useState<'draft' | 'published'>('published');
     const [coverMediaId, setCoverMediaId] = useState('');
     const [coverPreview, setCoverPreview] = useState<{ url: string; url_thumb?: string } | null>(null);
+    const [categoryIds, setCategoryIds] = useState<string[]>([]);
+    const [categories, setCategories] = useState<AlbumCategory[]>([]);
 
     // Album media state
     const [albumMedia, setAlbumMedia] = useState<MediaItem[]>([]);
@@ -76,6 +79,7 @@ export default function AlbumDetailPage() {
             setPassword('');
             setStatus(res.data.status || 'published');
             setCoverMediaId(res.data.cover_media_id || '');
+            setCategoryIds(res.data.category_ids || []);
             if (res.data.cover_media) {
                 setCoverPreview({ url: res.data.cover_media.url, url_thumb: res.data.cover_media.url_thumb });
             } else {
@@ -87,6 +91,15 @@ export default function AlbumDetailPage() {
         }
         setLoading(false);
     }, [albumId]);
+
+    const loadCategories = useCallback(async () => {
+        try {
+            const res = await listAlbumCategories();
+            setCategories(res.categories || []);
+        } catch (e) {
+            console.error('Failed to load album categories:', e);
+        }
+    }, []);
 
     const loadAlbumMedia = useCallback(async (p: number) => {
         if (!albumId) return;
@@ -107,7 +120,8 @@ export default function AlbumDetailPage() {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         loadAlbum();
         loadAlbumMedia(1);
-    }, [loadAlbum, loadAlbumMedia]);
+        loadCategories();
+    }, [loadAlbum, loadAlbumMedia, loadCategories]);
 
     const handleSave = async () => {
         if (!albumId) return;
@@ -122,6 +136,7 @@ export default function AlbumDetailPage() {
                 password: password.trim() || undefined,
                 status,
                 cover_media_id: coverMediaId || undefined,
+                category_ids: categoryIds,
             });
             toast.success(t('admin_album_detail_save_success'));
             loadAlbum();
@@ -258,6 +273,16 @@ export default function AlbumDetailPage() {
                                     <Input value={tags} onChange={(e) => setTags(e.target.value)}
                                         placeholder={t('admin_album_field_tags_placeholder')} className="mt-1" />
                                 </div>
+                            </div>
+                            <div>
+                                <Label>{t('admin_album_field_categories')}</Label>
+                                <MultiSelect
+                                    options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                                    selected={categoryIds}
+                                    onChange={setCategoryIds}
+                                    placeholder={t('admin_album_field_categories_placeholder')}
+                                    className="mt-1"
+                                />
                             </div>
                         </CardContent>
                     </Card>

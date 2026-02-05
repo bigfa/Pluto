@@ -79,6 +79,23 @@ export const albumTags = sqliteTable("album_tags", {
     tag: text("tag").notNull(),
 });
 
+// Album Categories
+export const albumCategories = sqliteTable("album_categories", {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    description: text("description"),
+    display_order: integer("display_order"),
+    show_in_frontend: integer("show_in_frontend").notNull().default(1),
+    created_at: text("created_at").notNull(),
+});
+
+// Album Category Links
+export const albumCategoryLinks = sqliteTable("album_category_links", {
+    album_id: text("album_id").notNull(),
+    category_id: text("category_id").notNull(),
+});
+
 // Album Media
 export const albumMedia = sqliteTable("album_media", {
     album_id: text("album_id").notNull(),
