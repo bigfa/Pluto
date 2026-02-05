@@ -117,6 +117,7 @@ export interface MediaCategory {
     slug: string;
     description?: string;
     display_order: number;
+    show_in_frontend?: number | boolean;
     media_count: number;
     created_at: string;
 }
@@ -238,6 +239,7 @@ export async function createCategory(data: {
     name: string;
     slug?: string;
     description?: string;
+    show_in_frontend?: boolean;
 }): Promise<{ ok: boolean; data: MediaCategory }> {
     return apiFetch('/api/admin/media/categories', {
         method: 'POST',
@@ -247,7 +249,7 @@ export async function createCategory(data: {
 
 export async function updateCategory(
     id: string,
-    data: { name?: string; slug?: string; description?: string }
+    data: { name?: string; slug?: string; description?: string; show_in_frontend?: boolean }
 ): Promise<{ ok: boolean; data: MediaCategory }> {
     return apiFetch(`/api/admin/media/categories/${id}`, {
         method: 'PUT',

@@ -20,6 +20,7 @@ export default function CategoryManager({ categories, onRefresh }: CategoryManag
     const [newCatName, setNewCatName] = useState('');
     const [newCatSlug, setNewCatSlug] = useState('');
     const [newCatDesc, setNewCatDesc] = useState('');
+    const [newCatShow, setNewCatShow] = useState(true);
     const [creatingCat, setCreatingCat] = useState(false);
 
     // Edit category state
@@ -27,6 +28,7 @@ export default function CategoryManager({ categories, onRefresh }: CategoryManag
     const [editCatName, setEditCatName] = useState('');
     const [editCatSlug, setEditCatSlug] = useState('');
     const [editCatDesc, setEditCatDesc] = useState('');
+    const [editCatShow, setEditCatShow] = useState(true);
     const [savingCat, setSavingCat] = useState(false);
 
     // Delete category confirm state
@@ -40,11 +42,13 @@ export default function CategoryManager({ categories, onRefresh }: CategoryManag
                 name: newCatName.trim(),
                 slug: newCatSlug.trim() || undefined,
                 description: newCatDesc.trim() || undefined,
+                show_in_frontend: newCatShow,
             });
             toast.success(t('admin_category_create_success'));
             setNewCatName('');
             setNewCatSlug('');
             setNewCatDesc('');
+            setNewCatShow(true);
             onRefresh();
         } catch (e) {
             console.error('Failed to create category:', e);
@@ -58,6 +62,7 @@ export default function CategoryManager({ categories, onRefresh }: CategoryManag
         setEditCatName(cat.name);
         setEditCatSlug(cat.slug);
         setEditCatDesc(cat.description || '');
+        setEditCatShow(Boolean(cat.show_in_frontend ?? 1));
     };
 
     const handleSaveCategory = async () => {
@@ -68,6 +73,7 @@ export default function CategoryManager({ categories, onRefresh }: CategoryManag
                 name: editCatName.trim(),
                 slug: editCatSlug.trim() || undefined,
                 description: editCatDesc.trim() || undefined,
+                show_in_frontend: editCatShow,
             });
             toast.success(t('admin_category_update_success'));
             setEditCat(null);
@@ -116,6 +122,23 @@ export default function CategoryManager({ categories, onRefresh }: CategoryManag
                             <Input value={newCatDesc} onChange={(e) => setNewCatDesc(e.target.value)}
                                 placeholder={t('admin_category_desc_placeholder_optional')} className="mt-1" />
                         </div>
+                        <div className="flex items-center gap-2">
+                            <Label>{t('admin_category_table_show')}</Label>
+                            <button
+                                type="button"
+                                onClick={() => setNewCatShow(!newCatShow)}
+                                className={`inline-flex h-6 w-11 items-center rounded-full border transition-colors ${
+                                    newCatShow ? 'bg-primary border-primary' : 'bg-muted border-border'
+                                }`}
+                                aria-label={t('admin_category_table_show')}
+                            >
+                                <span
+                                    className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                                        newCatShow ? 'translate-x-5' : 'translate-x-0'
+                                    }`}
+                                />
+                            </button>
+                        </div>
                         <Button onClick={handleCreateCategory} disabled={creatingCat || !newCatName.trim()}>
                             <Plus className="h-4 w-4 mr-1" />
                             {creatingCat ? t('common_creating') : t('common_create')}
@@ -138,6 +161,7 @@ export default function CategoryManager({ categories, onRefresh }: CategoryManag
                                         <th className="py-3 px-4 text-left font-medium">{t('admin_category_table_slug')}</th>
                                         <th className="py-3 px-4 text-left font-medium">{t('admin_category_table_desc')}</th>
                                         <th className="py-3 px-4 text-left font-medium">{t('admin_category_table_media_count')}</th>
+                                        <th className="py-3 px-4 text-left font-medium">{t('admin_category_table_show')}</th>
                                         <th className="py-3 px-4 text-left font-medium w-[120px]">{t('admin_category_table_actions')}</th>
                                     </tr>
                                 </thead>
@@ -148,6 +172,34 @@ export default function CategoryManager({ categories, onRefresh }: CategoryManag
                                             <td className="py-3 px-4 text-muted-foreground">{cat.slug}</td>
                                             <td className="py-3 px-4 text-muted-foreground">{cat.description || '-'}</td>
                                             <td className="py-3 px-4">{cat.media_count}</td>
+                                            <td className="py-3 px-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                        try {
+                                                            await updateCategoryApi(cat.id, {
+                                                                show_in_frontend: !Boolean(cat.show_in_frontend ?? 1),
+                                                            });
+                                                            onRefresh();
+                                                        } catch (e) {
+                                                            console.error('Failed to update category:', e);
+                                                            toast.error(t('admin_category_update_failed'));
+                                                        }
+                                                    }}
+                                                    className={`inline-flex h-6 w-11 items-center rounded-full border transition-colors ${
+                                                        Boolean(cat.show_in_frontend ?? 1)
+                                                            ? 'bg-primary border-primary'
+                                                            : 'bg-muted border-border'
+                                                    }`}
+                                                    aria-label={t('admin_category_table_show')}
+                                                >
+                                                    <span
+                                                        className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                                                            Boolean(cat.show_in_frontend ?? 1) ? 'translate-x-5' : 'translate-x-0'
+                                                        }`}
+                                                    />
+                                                </button>
+                                            </td>
                                             <td className="py-3 px-4">
                                                 <div className="flex gap-1">
                                                     <Button size="icon" variant="ghost" className="h-8 w-8"
@@ -191,6 +243,23 @@ export default function CategoryManager({ categories, onRefresh }: CategoryManag
                             <Label>{t('admin_category_desc')}</Label>
                             <Input value={editCatDesc} onChange={(e) => setEditCatDesc(e.target.value)}
                                 placeholder={t('admin_category_desc_placeholder')} className="mt-1" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <Label>{t('admin_category_table_show')}</Label>
+                            <button
+                                type="button"
+                                onClick={() => setEditCatShow(!editCatShow)}
+                                className={`inline-flex h-6 w-11 items-center rounded-full border transition-colors ${
+                                    editCatShow ? 'bg-primary border-primary' : 'bg-muted border-border'
+                                }`}
+                                aria-label={t('admin_category_table_show')}
+                            >
+                                <span
+                                    className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                                        editCatShow ? 'translate-x-5' : 'translate-x-0'
+                                    }`}
+                                />
+                            </button>
                         </div>
                     </div>
                     <DialogFooter>

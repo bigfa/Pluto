@@ -26,6 +26,7 @@ interface CategoryData {
     slug?: string;
     description?: string;
     display_order?: number;
+    show_in_frontend?: boolean;
 }
 
 interface CategoryPatch {
@@ -33,6 +34,7 @@ interface CategoryPatch {
     slug?: string;
     description?: string;
     display_order?: number;
+    show_in_frontend?: boolean;
 }
 
 interface CategoryRow {
@@ -41,6 +43,7 @@ interface CategoryRow {
     slug: string;
     description: string | null;
     display_order: number | null;
+    show_in_frontend: number | null;
     created_at: string;
 }
 
@@ -64,6 +67,7 @@ export async function createCategory(
         slug,
         description: data.description || null,
         display_order: data.display_order ?? 0,
+        show_in_frontend: data.show_in_frontend === undefined ? 1 : data.show_in_frontend ? 1 : 0,
         created_at: now,
     });
 
@@ -135,6 +139,9 @@ export async function updateCategory(
     }
     if (patch.description !== undefined) updateData.description = patch.description;
     if (patch.display_order !== undefined) updateData.display_order = patch.display_order;
+    if (patch.show_in_frontend !== undefined) {
+        updateData.show_in_frontend = patch.show_in_frontend ? 1 : 0;
+    }
 
     if (Object.keys(updateData).length > 0) {
         await db

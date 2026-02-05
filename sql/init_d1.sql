@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS `media_categories` (
     `slug` TEXT NOT NULL,
     `description` TEXT,
     `display_order` INTEGER,
+    `show_in_frontend` INTEGER NOT NULL DEFAULT 1,
     `created_at` TEXT NOT NULL
 );
 

@@ -41,6 +41,7 @@ export const mediaCategories = pgTable("media_categories", {
     slug: text("slug").notNull(),
     description: text("description"),
     display_order: integer("display_order"),
+    show_in_frontend: integer("show_in_frontend").notNull().default(1),
     created_at: text("created_at").notNull(),
 });
 

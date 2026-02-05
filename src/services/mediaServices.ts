@@ -107,10 +107,9 @@ async function listMediaFromDb(
     const total = countResult[0]?.count || 0;
 
     // Get paginated results
-    const dateSort = sql`coalesce(${schema.media.datetime_original}, ${schema.media.created_at})`;
     const orderBy = sort === 'likes'
         ? desc(schema.media.likes)
-        : desc(dateSort);
+        : [desc(schema.media.datetime_original), desc(schema.media.created_at)];
 
         const results = await db
             .select({
@@ -140,7 +139,7 @@ async function listMediaFromDb(
         })
         .from(schema.media)
         .where(whereClause)
-        .orderBy(orderBy)
+        .orderBy(...(Array.isArray(orderBy) ? orderBy : [orderBy]))
         .limit(pageSize)
         .offset(offset);
 

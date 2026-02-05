@@ -20,8 +20,8 @@ export async function PUT(
 
     try {
         const body: any = await request.json();
-        const { name, slug, description, display_order } = body;
-        const data = await updateCategory(db, schema, id, { name, slug, description, display_order });
+        const { name, slug, description, display_order, show_in_frontend } = body;
+        const data = await updateCategory(db, schema, id, { name, slug, description, display_order, show_in_frontend });
         return NextResponse.json({ ok: true, data });
     } catch (e) {
         return NextResponse.json({ err: String(e) }, { status: 500 });

@@ -23,6 +23,7 @@ export interface Category {
     description?: string;
     display_order?: number;
     media_count?: number;
+    show_in_frontend?: boolean;
     created_at?: string;
 }
 
