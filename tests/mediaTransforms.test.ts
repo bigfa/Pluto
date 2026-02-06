@@ -59,4 +59,17 @@ describe('mediaTransforms', () => {
         expect(result.url_medium).toBeUndefined();
         expect(result.url_large).toBeUndefined();
     });
+
+    it('applies styles when only url is provided', () => {
+        const env: Env = {
+            MEDIA_THUMB_STYLE: '?thumb=1',
+        };
+
+        const result = resolveMediaOutputUrls(env, {
+            url: 'https://img.example.com/a.jpg',
+        });
+
+        expect(result.url).toBe('https://img.example.com/a.jpg');
+        expect(result.url_thumb).toBe('https://img.example.com/a.jpg?thumb=1');
+    });
 });
