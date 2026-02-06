@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveMediaOutputUrls } from '@/lib/mediaTransforms';
+import { resolveMediaOutputUrls, resolveMediaBaseUrl } from '@/lib/mediaTransforms';
 import type { Env } from '@/lib/env';
 
 describe('mediaTransforms', () => {
@@ -71,5 +71,44 @@ describe('mediaTransforms', () => {
 
         expect(result.url).toBe('https://img.example.com/a.jpg');
         expect(result.url_thumb).toBe('https://img.example.com/a.jpg?thumb=1');
+    });
+
+    it('resolves base url from object_key when provider is present', () => {
+        const env: Env = {
+            R2_DOMAIN: 'https://r2.example.com',
+        };
+
+        const baseUrl = resolveMediaBaseUrl(
+            { provider: 'r2', object_key: 'k/test.jpg', url: 'https://ignore.me' },
+            env,
+        );
+
+        expect(baseUrl).toBe('https://r2.example.com/k/test.jpg');
+    });
+
+    it('resolves provider url when url is relative', () => {
+        const env: Env = {
+            R2_DOMAIN: 'https://r2.example.com',
+        };
+
+        const baseUrl = resolveMediaBaseUrl(
+            { provider: 'r2', url: 'relative/path.jpg' },
+            env,
+        );
+
+        expect(baseUrl).toBe('https://r2.example.com/relative/path.jpg');
+    });
+
+    it('keeps absolute url when provided', () => {
+        const env: Env = {
+            R2_DOMAIN: 'https://r2.example.com',
+        };
+
+        const baseUrl = resolveMediaBaseUrl(
+            { provider: 'r2', url: 'https://img.example.com/a.jpg' },
+            env,
+        );
+
+        expect(baseUrl).toBe('https://img.example.com/a.jpg');
     });
 });

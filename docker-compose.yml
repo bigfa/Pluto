@@ -10,7 +10,7 @@ services:
       MEDIA_LOCAL_PUBLIC_URL: /uploads
       NEXT_PUBLIC_BASE_URL: http://localhost:8080
       ADMIN_USER: admin
-      ADMIN_PASS: 19890312
+      ADMIN_PASS: admin123
       SESSION_SECRET: change-me-to-a-long-random-string
     volumes:
       - ./data:/data
