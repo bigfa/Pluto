@@ -68,8 +68,7 @@ export async function getEnv(): Promise<Env> {
     // Prefer Cloudflare bindings when available (works for nodejs_compat runtimes too).
     if (forceCloudflare || cloudflareContextAvailable !== false) {
         try {
-            const cfModule = '@opennextjs/cloudflare';
-            const { getCloudflareContext } = await import(/* webpackIgnore: true */ cfModule);
+            const { getCloudflareContext } = await import('@opennextjs/cloudflare');
             const { env } = await getCloudflareContext({ async: true });
             cloudflareContextAvailable = true;
             return env as Env;

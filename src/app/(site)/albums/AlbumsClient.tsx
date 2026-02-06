@@ -98,16 +98,6 @@ export default function AlbumsClient({
 
     return (
         <div className={styles['albums-page']}>
-            <div className={styles['albums-page__header']}>
-                <Link
-                    href="/feed.xml"
-                    target="_blank"
-                    className={styles['albums-page__rss-link']}
-                    title={t('nav_rss')}
-                >
-                    <RssIcon size={20} />
-                </Link>
-            </div>
 
             {error && (
                 <div className={styles['albums-page__error']}>
