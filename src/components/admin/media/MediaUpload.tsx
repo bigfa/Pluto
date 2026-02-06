@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +44,19 @@ export default function MediaUpload({ categories, onUploadSuccess }: MediaUpload
     const [uploadProgress, setUploadProgress] = useState(0);
     const queueRef = useRef<QueuedFile[]>([]);
     const optionalLabel = t('common_optional');
+    const perFileProgress = useMemo(() => {
+        if (!uploading || queuedFiles.length === 0) return [];
+        const totalBytes = queuedFiles.reduce((sum, item) => sum + item.file.size, 0);
+        if (totalBytes <= 0) return queuedFiles.map(() => 0);
+
+        let remaining = Math.round((uploadProgress / 100) * totalBytes);
+        return queuedFiles.map((item) => {
+            const size = item.file.size || 1;
+            const loaded = Math.min(Math.max(remaining, 0), size);
+            remaining -= size;
+            return Math.min(100, Math.round((loaded / size) * 100));
+        });
+    }, [uploading, queuedFiles, uploadProgress]);
 
     useEffect(() => {
         queueRef.current = queuedFiles;
@@ -285,7 +298,7 @@ export default function MediaUpload({ categories, onUploadSuccess }: MediaUpload
                     )}
                     {queuedFiles.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-                            {queuedFiles.map((item) => (
+                            {queuedFiles.map((item, index) => (
                                 <div key={item.id} className="space-y-1">
                                     <div className="relative aspect-square overflow-hidden border bg-muted">
                                         <Image
@@ -296,6 +309,11 @@ export default function MediaUpload({ categories, onUploadSuccess }: MediaUpload
                                             className="object-cover"
                                             unoptimized
                                         />
+                                        {uploading && (
+                                            <div className="absolute inset-0 bg-black/55 flex items-center justify-center text-white text-sm font-semibold">
+                                                {perFileProgress[index] ?? 0}%
+                                            </div>
+                                        )}
                                         <button
                                             type="button"
                                             className="absolute top-1 right-1 rounded-full bg-black/70 text-white text-xs px-1.5 py-0.5"

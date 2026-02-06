@@ -10,8 +10,8 @@ const envNumber = (value?: string) => {
 const envBoolean = (value?: string) => {
     if (!value) return undefined;
     const normalized = value.trim().toLowerCase();
-    if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
-    if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+    if (["1", "true", "yes", "on"].includes(normalized)) return true;
+    if (["0", "false", "no", "off"].includes(normalized)) return false;
     return undefined;
 };
 
@@ -27,8 +27,8 @@ const envJson = <T>(value?: string) => {
 const envCsv = (value?: string) => {
     if (!value) return undefined;
     return value
-        .split(',')
-        .map(item => item.trim())
+        .split(",")
+        .map((item) => item.trim())
         .filter(Boolean);
 };
 
@@ -46,49 +46,42 @@ export const SITE_CONFIG = {
             envValue(process.env.NEXT_PUBLIC_SITE_DESCRIPTION) ||
             "A personal photo gallery showcasing favorite moments.",
         url:
-            envValue(process.env.NEXT_PUBLIC_SITE_URL) ||
-            "https://example.com",
+            envValue(process.env.NEXT_PUBLIC_SITE_URL) || "https://example.com",
     },
 
     // i18n
     i18n: {
         defaultLocale: envValue(process.env.NEXT_PUBLIC_DEFAULT_LOCALE) || "en",
-        locales:
-            envCsv(process.env.NEXT_PUBLIC_LOCALES) ||
-            ["en", "zh"],
+        locales: envCsv(process.env.NEXT_PUBLIC_LOCALES) || ["en", "zh"],
     },
 
     // Navigation Menu
-    navLinks:
-        envJson<NavLink[]>(process.env.NEXT_PUBLIC_NAV_LINKS) ||
-        [
-            { href: "/", label: "Home", labelKey: "nav_home" },
-            { href: "/albums", label: "Albums", labelKey: "nav_albums" },
-            {
-                href: "/categories",
-                label: "Categories",
-                labelKey: "nav_categories",
-            },
-            { href: "/about", label: "About", labelKey: "nav_about" },
-        ],
+    navLinks: envJson<NavLink[]>(process.env.NEXT_PUBLIC_NAV_LINKS) || [
+        { href: "/", label: "Home", labelKey: "nav_home" },
+        { href: "/albums", label: "Albums", labelKey: "nav_albums" },
+        {
+            href: "/categories",
+            label: "Categories",
+            labelKey: "nav_categories",
+        },
+        { href: "/about", label: "About", labelKey: "nav_about" },
+    ],
 
     // Home Grid Masonry Columns Configuration
     // Breakpoints match Tailwind: sm: 640, md: 768, lg: 1024, xl: 1280
-    masonryColumns:
-        envJson<{
-            default: number;
-            xl: number;
-            lg: number;
-            md: number;
-            sm: number;
-        }>(process.env.NEXT_PUBLIC_MASONRY_COLUMNS) ||
-        {
-            default: 3, // >= 1280px
-            xl: 3, // >= 1280px (explicit)
-            lg: 3, // < 1280px
-            md: 2, // < 960px (custom breakpoint in MediaGrid)
-            sm: 1, // < 640px
-        },
+    masonryColumns: envJson<{
+        default: number;
+        xl: number;
+        lg: number;
+        md: number;
+        sm: number;
+    }>(process.env.NEXT_PUBLIC_MASONRY_COLUMNS) || {
+        default: 4, // >= 1280px
+        xl: 4, // >= 1280px (explicit)
+        lg: 3, // < 1280px
+        md: 2, // < 960px (custom breakpoint in MediaGrid)
+        sm: 1, // < 640px
+    },
 
     // Frontend Photo Grid Spacing
     mediaGap: {
@@ -103,8 +96,7 @@ export const SITE_CONFIG = {
     features: {
         enableFilters:
             envBoolean(process.env.NEXT_PUBLIC_ENABLE_FILTERS) ?? true, // Show Sort/Orientation/Category filters
-        enableLikes:
-            envBoolean(process.env.NEXT_PUBLIC_ENABLE_LIKES) ?? true, // Enable Like button functionality
+        enableLikes: envBoolean(process.env.NEXT_PUBLIC_ENABLE_LIKES) ?? true, // Enable Like button functionality
         enableNewsletter:
             envBoolean(process.env.NEXT_PUBLIC_ENABLE_NEWSLETTER) ?? true, // Enable newsletter subscription form in footer
         enableFooterMenu:
