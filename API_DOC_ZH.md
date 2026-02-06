@@ -103,6 +103,8 @@ Query 参数：
 ### 照片分类
 `GET /media/categories`
 
+说明：仅返回 `show_in_frontend = 1` 的分类。
+
 响应：
 
 ```json
@@ -141,6 +143,7 @@ Query 参数：
 - `page`
 - `pageSize`
 - `q`
+- `category`（分类 slug 或 id）
 
 响应：
 
@@ -160,11 +163,35 @@ Query 参数：
       "views": 0,
       "likes": 0,
       "slug": "...",
-      "is_protected": false
+      "is_protected": false,
+      "categories": [{ "id": "...", "name": "...", "slug": "..." }],
+      "category_ids": ["..."]
     }
   ],
   "total": 0,
   "totalPages": 0
+}
+```
+
+### 相册分类
+`GET /albums/categories`
+
+说明：仅返回 `show_in_frontend = 1` 的分类。
+
+响应：
+
+```json
+{
+  "ok": true,
+  "categories": [
+    {
+      "id": "...",
+      "name": "...",
+      "slug": "...",
+      "description": "...",
+      "media_count": 0
+    }
+  ]
 }
 ```
 
@@ -330,9 +357,10 @@ Body：
 
 - `GET /admin/media/categories`
 - `POST /admin/media/categories`
-  - Body: `{ name, slug, description, display_order }`
+  - Body: `{ name, slug, description, display_order, show_in_frontend }`
 
 - `PUT /admin/media/categories/{id}`
+  - Body: `{ name, slug, description, display_order, show_in_frontend }`
 - `DELETE /admin/media/categories/{id}`
 
 ### 媒体标签
@@ -354,9 +382,11 @@ Body：
 - `GET /admin/albums`
   - Query: `page, pageSize, q`
 - `POST /admin/albums`
+  - Body: `{ title, description, cover_media_id, slug, tags, category_ids, password, status }`
 
 - `GET /admin/albums/{id}`
 - `PUT /admin/albums/{id}`
+  - Body: `{ title, description, cover_media_id, slug, tags, category_ids, password, status }`
 - `DELETE /admin/albums/{id}`
 
 - `GET /admin/albums/{id}/media`
@@ -367,6 +397,16 @@ Body：
 
 - `POST /admin/albums/{id}/otp`
   - 返回 `{ ok: true, otp: "..." }`
+
+### 相册分类
+
+- `GET /admin/albums/categories`
+- `POST /admin/albums/categories`
+  - Body: `{ name, slug, description, display_order, show_in_frontend }`
+
+- `PUT /admin/albums/categories/{id}`
+  - Body: `{ name, slug, description, display_order, show_in_frontend }`
+- `DELETE /admin/albums/categories/{id}`
 
 ### 相册评论
 
@@ -389,4 +429,3 @@ Body：
 
 - `GET /admin/subscribers`
   - Query: `page, pageSize`
-

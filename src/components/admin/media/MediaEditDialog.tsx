@@ -78,79 +78,77 @@ function MediaEditForm({
     };
 
     return (
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden">
-            <div className="flex max-h-[90vh] flex-col">
-                <DialogHeader>
-                    <DialogTitle>{t('admin_media_edit_title')}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 overflow-y-auto pr-1">
-                    <div className="flex justify-center">
-                        <div className="relative w-full max-w-xs h-40">
-                            <Image
-                                src={item.url_thumb || item.url}
-                                alt=""
-                                fill
-                                sizes="320px"
-                                className="object-contain"
-                                unoptimized
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <Label>{t('admin_media_edit_label_title')}</Label>
-                        <Input value={title} onChange={(e) => setTitle(e.target.value)}
-                            placeholder={t('admin_media_edit_placeholder_title')} className="mt-1" />
-                    </div>
-                    <div>
-                        <Label>{t('admin_media_edit_label_alt')}</Label>
-                        <Input value={alt} onChange={(e) => setAlt(e.target.value)}
-                            placeholder={t('admin_media_edit_placeholder_alt')} className="mt-1" />
-                    </div>
-                    <div>
-                        <Label>{t('admin_media_edit_label_category')}</Label>
-                        <MultiSelect
-                            options={categories.map(c => ({ value: c.id, label: c.name }))}
-                            selected={categoryIds}
-                            onChange={setCategoryIds}
-                            placeholder={t('admin_media_edit_placeholder_category')}
-                            className="mt-1"
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+                <DialogTitle>{t('admin_media_edit_title')}</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 min-h-0 space-y-4 overflow-y-auto pr-1">
+                <div className="flex justify-center">
+                    <div className="relative w-full max-w-xs h-40">
+                        <Image
+                            src={item.url_thumb || item.url}
+                            alt=""
+                            fill
+                            sizes="320px"
+                            className="object-contain"
+                            unoptimized
                         />
                     </div>
-                    <div>
-                        <Label>{t('admin_media_edit_label_tags')}</Label>
-                        <Input value={tags} onChange={(e) => setTags(e.target.value)}
-                            placeholder={t('admin_media_edit_placeholder_tags')} className="mt-1" />
-                    </div>
-                    <div>
-                        <Label>{t('admin_media_edit_label_visibility')}</Label>
-                        <Select value={visibility} onValueChange={setVisibility}>
-                            <SelectTrigger className="mt-1">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="public">{t('common_public')}</SelectItem>
-                                <SelectItem value="private">{t('common_private')}</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="text-xs text-muted-foreground space-y-1">
-                        <p>{t('admin_media_edit_filename')}: {item.filename}</p>
-                        <p>{t('admin_media_edit_url')}: <a href={item.url} target="_blank" rel="noopener noreferrer"
-                            className="text-primary hover:underline truncate inline-block max-w-[300px] align-bottom">
-                            {item.url}
-                        </a></p>
-                        {item.camera_model && <p>{t('admin_media_edit_camera')}: {item.camera_make} {item.camera_model}</p>}
-                        {item.lens_model && <p>{t('admin_media_edit_lens')}: {item.lens_model}</p>}
-                        {item.location_name && <p>{t('admin_media_edit_location')}: {item.location_name}</p>}
-                    </div>
                 </div>
-                <DialogFooter className="mt-4">
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common_cancel')}</Button>
-                    <Button onClick={handleSave} disabled={saving}>
-                        {saving ? t('common_saving') : t('common_save')}
-                    </Button>
-                </DialogFooter>
+                <div>
+                    <Label>{t('admin_media_edit_label_title')}</Label>
+                    <Input value={title} onChange={(e) => setTitle(e.target.value)}
+                        placeholder={t('admin_media_edit_placeholder_title')} className="mt-1" />
+                </div>
+                <div>
+                    <Label>{t('admin_media_edit_label_alt')}</Label>
+                    <Input value={alt} onChange={(e) => setAlt(e.target.value)}
+                        placeholder={t('admin_media_edit_placeholder_alt')} className="mt-1" />
+                </div>
+                <div>
+                    <Label>{t('admin_media_edit_label_category')}</Label>
+                    <MultiSelect
+                        options={categories.map(c => ({ value: c.id, label: c.name }))}
+                        selected={categoryIds}
+                        onChange={setCategoryIds}
+                        placeholder={t('admin_media_edit_placeholder_category')}
+                        className="mt-1"
+                    />
+                </div>
+                <div>
+                    <Label>{t('admin_media_edit_label_tags')}</Label>
+                    <Input value={tags} onChange={(e) => setTags(e.target.value)}
+                        placeholder={t('admin_media_edit_placeholder_tags')} className="mt-1" />
+                </div>
+                <div>
+                    <Label>{t('admin_media_edit_label_visibility')}</Label>
+                    <Select value={visibility} onValueChange={setVisibility}>
+                        <SelectTrigger className="mt-1">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="public">{t('common_public')}</SelectItem>
+                            <SelectItem value="private">{t('common_private')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                    <p>{t('admin_media_edit_filename')}: {item.filename}</p>
+                    <p>{t('admin_media_edit_url')}: <a href={item.url} target="_blank" rel="noopener noreferrer"
+                        className="text-primary hover:underline truncate inline-block max-w-[300px] align-bottom">
+                        {item.url}
+                    </a></p>
+                    {item.camera_model && <p>{t('admin_media_edit_camera')}: {item.camera_make} {item.camera_model}</p>}
+                    {item.lens_model && <p>{t('admin_media_edit_lens')}: {item.lens_model}</p>}
+                    {item.location_name && <p>{t('admin_media_edit_location')}: {item.location_name}</p>}
+                </div>
             </div>
+            <DialogFooter className="mt-4">
+                <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common_cancel')}</Button>
+                <Button onClick={handleSave} disabled={saving}>
+                    {saving ? t('common_saving') : t('common_save')}
+                </Button>
+            </DialogFooter>
         </DialogContent>
     );
 }

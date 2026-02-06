@@ -103,6 +103,8 @@ Response:
 ### Media Categories
 `GET /media/categories`
 
+Note: only categories with `show_in_frontend = 1` are returned.
+
 Response:
 
 ```json
@@ -141,6 +143,7 @@ Query Parameters:
 - `page`
 - `pageSize`
 - `q`
+- `category` (category slug or id)
 
 Response:
 
@@ -160,11 +163,35 @@ Response:
       "views": 0,
       "likes": 0,
       "slug": "...",
-      "is_protected": false
+      "is_protected": false,
+      "categories": [{ "id": "...", "name": "...", "slug": "..." }],
+      "category_ids": ["..."]
     }
   ],
   "total": 0,
   "totalPages": 0
+}
+```
+
+### Album Categories
+`GET /albums/categories`
+
+Note: only categories with `show_in_frontend = 1` are returned.
+
+Response:
+
+```json
+{
+  "ok": true,
+  "categories": [
+    {
+      "id": "...",
+      "name": "...",
+      "slug": "...",
+      "description": "...",
+      "media_count": 0
+    }
+  ]
 }
 ```
 
@@ -330,9 +357,10 @@ All admin endpoints require the `photos_admin` session cookie.
 
 - `GET /admin/media/categories`
 - `POST /admin/media/categories`
-  - Body: `{ name, slug, description, display_order }`
+  - Body: `{ name, slug, description, display_order, show_in_frontend }`
 
 - `PUT /admin/media/categories/{id}`
+- Body: `{ name, slug, description, display_order, show_in_frontend }`
 - `DELETE /admin/media/categories/{id}`
 
 ### Media Tags
@@ -354,9 +382,11 @@ All admin endpoints require the `photos_admin` session cookie.
 - `GET /admin/albums`
   - Query: `page, pageSize, q`
 - `POST /admin/albums`
+  - Body: `{ title, description, cover_media_id, slug, tags, category_ids, password, status }`
 
 - `GET /admin/albums/{id}`
 - `PUT /admin/albums/{id}`
+  - Body: `{ title, description, cover_media_id, slug, tags, category_ids, password, status }`
 - `DELETE /admin/albums/{id}`
 
 - `GET /admin/albums/{id}/media`
@@ -367,6 +397,16 @@ All admin endpoints require the `photos_admin` session cookie.
 
 - `POST /admin/albums/{id}/otp`
   - Returns `{ ok: true, otp: "..." }`
+
+### Album Categories
+
+- `GET /admin/albums/categories`
+- `POST /admin/albums/categories`
+  - Body: `{ name, slug, description, display_order, show_in_frontend }`
+
+- `PUT /admin/albums/categories/{id}`
+  - Body: `{ name, slug, description, display_order, show_in_frontend }`
+- `DELETE /admin/albums/categories/{id}`
 
 ### Album Comments
 
@@ -389,4 +429,3 @@ All admin endpoints require the `photos_admin` session cookie.
 
 - `GET /admin/subscribers`
   - Query: `page, pageSize`
-

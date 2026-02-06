@@ -136,6 +136,13 @@
 
 `GET /api/albums`
 
+### Query 参数
+
+- `page` (number, default 1)
+- `pageSize` (number, default 20)
+- `q` (string, optional)
+- `category` (string, optional，分类 slug 或 id)
+
 ### 精简字段
 
 - `id`
@@ -146,6 +153,8 @@
 - `likes`
 - `slug`
 - `is_protected`
+- `categories`
+- `category_ids`
 
 ### 响应示例
 
@@ -166,7 +175,9 @@
       "media_count": 88,
       "likes": 10,
       "slug": "japan-2024",
-      "is_protected": true
+      "is_protected": true,
+      "categories": [{ "id": "c1", "name": "Travel", "slug": "travel" }],
+      "category_ids": ["c1"]
     }
   ],
   "total": 5,
@@ -318,6 +329,8 @@ Response:
 
 `GET /api/media/categories`
 
+说明：仅返回 `show_in_frontend = 1` 的分类。
+
 响应示例：
 
 ```json
@@ -329,9 +342,26 @@ Response:
 }
 ```
 
+## 10. 相册分类列表
+
+`GET /api/albums/categories`
+
+说明：仅返回 `show_in_frontend = 1` 的分类。
+
+响应示例：
+
+```json
+{
+  "ok": true,
+  "categories": [
+    { "id": "a1", "name": "Travel", "slug": "travel", "count": 5 }
+  ]
+}
+```
+
 ---
 
-## 10. 评论列表与提交
+## 11. 评论列表与提交
 
 ### 获取评论
 
