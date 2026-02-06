@@ -31,4 +31,22 @@ describe('mediaProviders.publicUrlForKey', () => {
         const url = publicUrlForKey(env, 'local', 'a/b.jpg', 'https://origin.example.com');
         expect(url).toBe('https://origin.example.com/uploads/a/b.jpg');
     });
+
+    it('uses provider domain when MEDIA_DOMAIN is not set', () => {
+        const env: Env = {
+            R2_DOMAIN: 'https://r2.example.com/',
+        };
+
+        const url = publicUrlForKey(env, 'r2', 'x/y.jpg');
+        expect(url).toBe('https://r2.example.com/x/y.jpg');
+    });
+
+    it('uses absolute MEDIA_LOCAL_PUBLIC_URL directly', () => {
+        const env: Env = {
+            MEDIA_LOCAL_PUBLIC_URL: 'https://static.example.com/uploads',
+        };
+
+        const url = publicUrlForKey(env, 'local', 'x/y.jpg', 'https://origin.example.com');
+        expect(url).toBe('https://static.example.com/uploads/x/y.jpg');
+    });
 });

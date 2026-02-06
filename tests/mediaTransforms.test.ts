@@ -34,4 +34,29 @@ describe('mediaTransforms', () => {
         expect(result.url).toBe('https://img.example.com/a.jpg?x=1');
         expect(result.url_thumb).toBe('https://img.example.com/a.jpg/thumb?x=1');
     });
+
+    it('appends & style to existing query string', () => {
+        const env: Env = {
+            MEDIA_THUMB_STYLE: '&thumb=1',
+        };
+
+        const result = resolveMediaOutputUrls(env, {
+            url: 'https://img.example.com/a.jpg?x=1',
+        });
+
+        expect(result.url_thumb).toBe('https://img.example.com/a.jpg?x=1&thumb=1');
+    });
+
+    it('falls back to base url when styles are not configured', () => {
+        const env: Env = {};
+
+        const result = resolveMediaOutputUrls(env, {
+            url: 'https://img.example.com/a.jpg',
+        });
+
+        expect(result.url).toBe('https://img.example.com/a.jpg');
+        expect(result.url_thumb).toBeUndefined();
+        expect(result.url_medium).toBeUndefined();
+        expect(result.url_large).toBeUndefined();
+    });
 });
