@@ -53,6 +53,7 @@ export const SITE_CONFIG = {
     i18n: {
         defaultLocale: envValue(process.env.NEXT_PUBLIC_DEFAULT_LOCALE) || "en",
         locales: envCsv(process.env.NEXT_PUBLIC_LOCALES) || ["en", "zh"],
+        timeZone: envValue(process.env.NEXT_PUBLIC_TIMEZONE),
     },
 
     // Navigation Menu

@@ -136,35 +136,82 @@ function HomeContent({
     }, [updateMedia, selectedMedia]);
 
     const locale = SITE_CONFIG.i18n.defaultLocale || 'en';
+    const timeZone = SITE_CONFIG.i18n.timeZone;
+    const isInitialLoading = loading && page === 1 && (media?.length ?? 0) === 0;
+    const isEmptyResult = !loading && (media?.length ?? 0) === 0;
 
-        const groupedMedia = useMemo(() => {
-            const groups = new Map<string, { label: string; items: Media[] }>();
+    const groupedMedia = useMemo(() => {
+        const groups = new Map<string, { label: string; items: Media[] }>();
 
-            const parseMediaDate = (value?: string | null) => {
-                if (!value) return null;
-                // Handle EXIF format: YYYY:MM:DD HH:MM:SS
-                if (/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(value)) {
-                    const [datePart, timePart] = value.split(' ');
-                    const [y, m, d] = datePart.split(':');
-                    return new Date(`${y}-${m}-${d}T${timePart}Z`);
-                }
-                const parsed = new Date(value);
-                return Number.isNaN(parsed.getTime()) ? null : parsed;
-            };
+        const timeZoneOption: { timeZone?: string } = {};
+        if (timeZone) {
+            try {
+                new Intl.DateTimeFormat('en-US', { timeZone });
+                timeZoneOption.timeZone = timeZone;
+            } catch {
+                // Ignore invalid timezone configuration and fall back to browser local timezone.
+            }
+        }
 
-            for (const item of media || []) {
-                const rawDate = item.datetime_original || item.created_at;
-                const date = parseMediaDate(rawDate);
-                const currentYear = new Date().getFullYear();
-                const key = date && !Number.isNaN(date.getTime())
-                    ? date.toISOString().slice(0, 10)
-                    : 'unknown';
-                const label = date && !Number.isNaN(date.getTime())
-                    ? new Intl.DateTimeFormat(locale, date.getFullYear() === currentYear
-                        ? { month: 'short', day: '2-digit' }
-                        : { month: 'short', day: '2-digit', year: 'numeric' }
-                    ).format(date)
-                    : t('unknown_date');
+        const dateKeyFormatter = new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            ...timeZoneOption,
+        });
+        const yearFormatter = new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            ...timeZoneOption,
+        });
+        const labelFormatterWithoutYear = new Intl.DateTimeFormat(locale, {
+            month: 'short',
+            day: '2-digit',
+            ...timeZoneOption,
+        });
+        const labelFormatterWithYear = new Intl.DateTimeFormat(locale, {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+            ...timeZoneOption,
+        });
+
+        const currentYear = Number(yearFormatter.format(new Date()));
+
+        const parseMediaDate = (value?: string | null) => {
+            if (!value) return null;
+            // Backward-compatible support for legacy EXIF format: YYYY:MM:DD HH:MM:SS
+            if (/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(value)) {
+                const [datePart, timePart] = value.split(' ');
+                const [y, m, d] = datePart.split(':');
+                const legacyParsed = new Date(`${y}-${m}-${d}T${timePart}`);
+                return Number.isNaN(legacyParsed.getTime()) ? null : legacyParsed;
+            }
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        };
+
+        const getDateKey = (date: Date) => {
+            const parts = dateKeyFormatter.formatToParts(date);
+            const year = parts.find((part) => part.type === 'year')?.value;
+            const month = parts.find((part) => part.type === 'month')?.value;
+            const day = parts.find((part) => part.type === 'day')?.value;
+            if (!year || !month || !day) {
+                const fallbackMonth = String(date.getMonth() + 1).padStart(2, '0');
+                const fallbackDay = String(date.getDate()).padStart(2, '0');
+                return `${date.getFullYear()}-${fallbackMonth}-${fallbackDay}`;
+            }
+            return `${year}-${month}-${day}`;
+        };
+
+        for (const item of media || []) {
+            const rawDate = item.datetime_original || item.created_at;
+            const date = parseMediaDate(rawDate);
+            const key = date ? getDateKey(date) : 'unknown';
+            const label = date
+                ? (Number(yearFormatter.format(date)) === currentYear
+                    ? labelFormatterWithoutYear.format(date)
+                    : labelFormatterWithYear.format(date))
+                : t('unknown_date');
 
             if (!groups.has(key)) {
                 groups.set(key, { label, items: [] });
@@ -173,7 +220,7 @@ function HomeContent({
         }
 
         return Array.from(groups.values());
-    }, [media, locale]);
+    }, [media, locale, timeZone]);
 
     return (
         <div className="min-h-screen">
@@ -262,10 +309,18 @@ function HomeContent({
                         </div>
                     )}
 
-                    {loading && page === 1 && (media?.length ?? 0) === 0 ? (
+                    {isInitialLoading ? (
                         <MediaGrid
                             media={[]}
                             loading={true}
+                            onItemClick={handleMediaClick}
+                            onLike={SITE_CONFIG.features.enableLikes ? handleLike : undefined}
+                            masonry={true}
+                        />
+                    ) : isEmptyResult ? (
+                        <MediaGrid
+                            media={[]}
+                            loading={false}
                             onItemClick={handleMediaClick}
                             onLike={SITE_CONFIG.features.enableLikes ? handleLike : undefined}
                             masonry={true}

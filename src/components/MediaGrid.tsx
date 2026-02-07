@@ -4,6 +4,7 @@ import MediaCard from './MediaCard';
 import styles from './MediaGrid.module.scss';
 import { SITE_CONFIG } from '@/config/site';
 import { useMemo, type CSSProperties } from 'react';
+import { t } from '@/lib/i18n';
 
 interface MediaGridProps {
     media: Media[];
@@ -96,8 +97,8 @@ export default function MediaGrid({ media, onItemClick, onLike, loading, columns
         return (
             <div className={styles.empty}>
                 <div className={styles.emptyIcon}>📷</div>
-                <h3 className={styles.emptyTitle}>No photos found</h3>
-                <p className={styles.emptyText}>Try adjusting your search or filters</p>
+                <h3 className={styles.emptyTitle}>{t('home_empty_title')}</h3>
+                <p className={styles.emptyText}>{t('home_empty_hint')}</p>
             </div>
         );
     }
