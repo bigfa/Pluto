@@ -5,7 +5,7 @@
 import { Env } from "@/lib/env";
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
-import { eq, desc, count, sql } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 import { getActiveSubscribers } from "./subscriberServices";
 
 export interface NewsletterListResult {
@@ -187,7 +187,7 @@ export async function sendNewsletter(
         .set({
             status: finalStatus,
             recipients_count: sentCount,
-            sent_at: sentCount > 0 ? sql`datetime('now')` : null
+            sent_at: sentCount > 0 ? new Date().toISOString() : null
         })
         .where(eq(schema.newsletters.id, id));
 

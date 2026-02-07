@@ -2,6 +2,34 @@
 
 本文件记录项目的重要变更。
 
+## [0.2.1] - 2026-02-07
+
+### 新增
+- 公开媒体详情接口 `GET /api/media/{id}`：返回单张照片的完整信息（分类、标签、EXIF、点赞状态等）。
+- 图片上传重复检测：基于 SHA-256 哈希检测重复文件，跳过已存在的图片并提示用户。
+- 数据库字段 `file_hash`：用于存储图片哈希值。
+
+### 变更
+- 统一时间格式为 ISO 8601（`YYYY-MM-DDTHH:mm:ss.sssZ`）。
+
+### 升级指南
+
+从 v0.2.0 升级需要执行数据库迁移：
+
+```bash
+# Cloudflare D1 - 本地开发环境
+npx wrangler d1 execute <DB_NAME> --local --file=drizzle/0003_add_media_file_hash.sql
+
+# Cloudflare D1 - 远程生产环境
+npx wrangler d1 execute <DB_NAME> --remote --file=drizzle/0003_add_media_file_hash.sql
+
+# Docker (SQLite) - 进入容器执行
+sqlite3 /data/photos.db < drizzle/0003_add_media_file_hash.sql
+
+# Supabase (PostgreSQL)
+psql -h <host> -U postgres -d postgres -f drizzle/0003_add_media_file_hash.sql
+```
+
 ## [0.2.0] - 2026-02-06
 
 ### 新增

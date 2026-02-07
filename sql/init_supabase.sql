@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS media (
     size INTEGER,
     width INTEGER,
     height INTEGER,
+    file_hash TEXT,
     title TEXT,
     alt TEXT,
     exif_json TEXT,
@@ -165,6 +166,7 @@ CREATE TABLE IF NOT EXISTS newsletters (
 CREATE INDEX IF NOT EXISTS idx_media_created_at ON media (created_at);
 CREATE INDEX IF NOT EXISTS idx_media_visibility ON media (visibility);
 CREATE INDEX IF NOT EXISTS idx_media_provider ON media (provider);
+CREATE INDEX IF NOT EXISTS idx_media_file_hash ON media (file_hash);
 
 -- Media Categories
 CREATE UNIQUE INDEX IF NOT EXISTS idx_media_categories_slug ON media_categories (slug);

@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-02-07
+
+### Added
+- Public media details endpoint `GET /api/media/{id}`: returns full photo info including categories, tags, EXIF, and like status.
+- Upload duplicate detection: SHA-256 hash-based detection that skips existing files and notifies users.
+- Database field `file_hash`: stores image hash for duplicate detection.
+
+### Changed
+- Unified all timestamps to ISO 8601 format (`YYYY-MM-DDTHH:mm:ss.sssZ`).
+
+### Upgrade Guide
+
+Upgrading from v0.2.0 requires a database migration:
+
+```bash
+# Cloudflare D1 - Local development
+npx wrangler d1 execute <DB_NAME> --local --file=drizzle/0003_add_media_file_hash.sql
+
+# Cloudflare D1 - Remote production
+npx wrangler d1 execute <DB_NAME> --remote --file=drizzle/0003_add_media_file_hash.sql
+
+# Docker (SQLite) - Execute inside container
+sqlite3 /data/photos.db < drizzle/0003_add_media_file_hash.sql
+
+# Supabase (PostgreSQL)
+psql -h <host> -U postgres -d postgres -f drizzle/0003_add_media_file_hash.sql
+```
+
 ## [0.2.0] - 2026-02-06
 
 ### Added

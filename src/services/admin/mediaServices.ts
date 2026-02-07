@@ -12,6 +12,37 @@ import type { Env } from '@/lib/env';
 import type { MediaFile, MediaCreate, MediaUpdate, MediaProvider } from '@/types/admin';
 import { putObject } from './mediaProviders';
 
+/**
+ * Compute MD5 hash of file content using Web Crypto API.
+ * Returns hex string of the hash.
+ */
+async function computeFileHash(arrayBuffer: ArrayBuffer): Promise<string> {
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Check if a media with the given hash already exists.
+ * Returns the existing media if found, null otherwise.
+ */
+export async function findMediaByHash(
+    db: any,
+    schema: any,
+    fileHash: string,
+): Promise<MediaFile | null> {
+    if (!fileHash) return null;
+
+    const rows = await db
+        .select()
+        .from(schema.media)
+        .where(eq(schema.media.file_hash, fileHash))
+        .limit(1);
+
+    if (!rows[0]) return null;
+    return rowToMediaFile(db, schema, rows[0]);
+}
+
 // Helper to safely get EXIF value from multiple possible locations
 function safeGet(exif: any, tags: string[], groups: string[] = ['exif', 'file', 'ifd0']): string | undefined {
     if (!exif) return undefined;
@@ -295,6 +326,7 @@ function mapRowToMediaFile(
         url_thumb: row.url_thumb || undefined,
         url_medium: row.url_medium || undefined,
         url_large: row.url_large || undefined,
+        file_hash: row.file_hash || undefined,
         title: row.title || undefined,
         alt: row.alt || undefined,
         exif_json: row.exif_json || undefined,
@@ -521,6 +553,7 @@ export async function createMedia(
         size: data.size || null,
         width: data.width || null,
         height: data.height || null,
+        file_hash: data.file_hash || null,
         title: data.title || null,
         alt: data.alt || null,
         exif_json: data.exif_json || null,
@@ -680,6 +713,17 @@ export async function createMediaFromFile(options: {
     const contentType = file.type || 'application/octet-stream';
     const filename = file.name;
 
+    // ---- Compute file hash and check for duplicates ----
+    const fileHash = await computeFileHash(arrayBuffer);
+    const existingMedia = await findMediaByHash(db, schema, fileHash);
+    if (existingMedia) {
+        // Throw error with existing media info for duplicate detection
+        const error = new Error('Duplicate file detected') as Error & { isDuplicate: true; existingMedia: MediaFile };
+        error.isDuplicate = true;
+        error.existingMedia = existingMedia;
+        throw error;
+    }
+
     // ---- EXIF extraction ----
     let exifData: any = null;
     let cameraMake: string | undefined;
@@ -792,6 +836,7 @@ export async function createMediaFromFile(options: {
         size: arrayBuffer.byteLength,
         width,
         height,
+        file_hash: fileHash,
         title: title || filename,
         alt: alt || title || filename,
         exif_json: exifData ? JSON.stringify(exifData) : undefined,

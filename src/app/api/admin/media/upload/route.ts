@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
         const visibility = (formData.get('visibility') as string) || undefined;
 
         const createdItems = [];
+        const duplicates: { name: string; existingId: string; existingUrl: string }[] = [];
         const failures: { name: string; error: string }[] = [];
 
         for (const file of files) {
@@ -55,12 +56,21 @@ export async function POST(request: NextRequest) {
                     visibility,
                 });
                 createdItems.push(created);
-            } catch (err) {
-                failures.push({ name: file.name || 'unknown', error: String(err) });
+            } catch (err: unknown) {
+                const error = err as Error & { isDuplicate?: boolean; existingMedia?: { id: string; url: string } };
+                if (error.isDuplicate && error.existingMedia) {
+                    duplicates.push({
+                        name: file.name || 'unknown',
+                        existingId: error.existingMedia.id,
+                        existingUrl: error.existingMedia.url,
+                    });
+                } else {
+                    failures.push({ name: file.name || 'unknown', error: String(err) });
+                }
             }
         }
 
-        if (createdItems.length === 0) {
+        if (createdItems.length === 0 && duplicates.length === 0) {
             return NextResponse.json(
                 { ok: false, failures, successCount: 0, failCount: failures.length },
                 { status: 500 },
@@ -71,6 +81,8 @@ export async function POST(request: NextRequest) {
             ok: true,
             data: createdItems,
             successCount: createdItems.length,
+            duplicateCount: duplicates.length,
+            duplicates: duplicates.length ? duplicates : undefined,
             failCount: failures.length,
             failures: failures.length ? failures : undefined,
         });

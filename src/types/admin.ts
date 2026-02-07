@@ -11,6 +11,7 @@ export interface MediaCreate {
     width?: number;
     height?: number;
     thumb_url?: string;
+    file_hash?: string;
     title?: string;
     alt?: string;
     description?: string;
@@ -56,6 +57,7 @@ export interface MediaFile {
     url_thumb?: string;
     url_medium?: string;
     url_large?: string;
+    file_hash?: string;
     title?: string;
     alt?: string;
     exif_json?: string;

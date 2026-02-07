@@ -177,6 +177,7 @@ export default function MediaUpload({ categories, onUploadSuccess }: MediaUpload
         setUploading(true);
         setUploadProgress(0);
         let successCount = 0;
+        let duplicateCount = 0;
         let failCount = 0;
 
         const formData = new FormData();
@@ -194,7 +195,8 @@ export default function MediaUpload({ categories, onUploadSuccess }: MediaUpload
         try {
             const result = await uploadMediaWithProgress(formData, setUploadProgress);
             successCount = result.successCount ?? result.data?.length ?? 0;
-            failCount = result.failCount ?? Math.max(0, queuedFiles.length - successCount);
+            duplicateCount = result.duplicateCount ?? 0;
+            failCount = result.failCount ?? Math.max(0, queuedFiles.length - successCount - duplicateCount);
         } catch (e) {
             console.error('Upload failed:', e);
             failCount = queuedFiles.length;
@@ -210,13 +212,17 @@ export default function MediaUpload({ categories, onUploadSuccess }: MediaUpload
         const fileInput = document.getElementById('upload-input') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
 
+        if (duplicateCount > 0) {
+            toast.warning(t('admin_upload_duplicates', { count: duplicateCount }));
+        }
+
         if (successCount > 0) {
             const message = failCount > 0
                 ? t('admin_upload_success_with_fail', { success: successCount, fail: failCount })
                 : t('admin_upload_success', { success: successCount });
             toast.success(message);
             onUploadSuccess();
-        } else {
+        } else if (duplicateCount === 0) {
             toast.error(t('admin_upload_failed'));
         }
     };

@@ -122,6 +122,47 @@ Query 参数：
 }
 ```
 
+### 照片详情
+`GET /media/{id}`
+
+说明：获取单张照片的完整信息，仅返回公开的照片（`visibility = 'public'` 或 `NULL`）。
+
+响应：
+
+```json
+{
+  "ok": true,
+  "data": {
+    "id": "...",
+    "url": "...",
+    "url_thumb": "...",
+    "url_medium": "...",
+    "url_large": "...",
+    "filename": "...",
+    "title": "...",
+    "alt": "...",
+    "width": 1920,
+    "height": 1080,
+    "size": 123456,
+    "mime_type": "image/jpeg",
+    "camera_make": "...",
+    "camera_model": "...",
+    "lens_model": "...",
+    "aperture": "f/2.8",
+    "shutter_speed": "1/100",
+    "iso": "100",
+    "focal_length": "50mm",
+    "datetime_original": "...",
+    "location_name": "...",
+    "categories": [{ "id": "...", "name": "...", "slug": "..." }],
+    "tags": ["tag1", "tag2"],
+    "likes": 10,
+    "liked": false,
+    "created_at": "2026-02-07T12:34:56.789Z"
+  }
+}
+```
+
 ### 照片点赞
 `GET /media/{id}/like`
 `POST /media/{id}/like`

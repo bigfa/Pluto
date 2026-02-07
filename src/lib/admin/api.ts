@@ -145,6 +145,8 @@ export interface UploadMediaResponse {
     ok: boolean;
     data: MediaItem[];
     successCount: number;
+    duplicateCount?: number;
+    duplicates?: { name: string; existingId: string; existingUrl: string }[];
     failCount: number;
     failures?: { name: string; error: string }[];
 }

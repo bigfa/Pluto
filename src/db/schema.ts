@@ -12,6 +12,7 @@ export const media = sqliteTable("media", {
     filename: text("filename"),
     mime: text("mime"),
     size: integer("size"),
+    file_hash: text("file_hash"),
     width: integer("width"),
     height: integer("height"),
     title: text("title"),

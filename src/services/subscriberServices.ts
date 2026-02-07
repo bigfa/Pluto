@@ -5,7 +5,7 @@
 import { Env } from "@/lib/env";
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
-import { eq, desc, count, sql } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 
 export interface SubscribeResult {
     ok: boolean;
@@ -38,7 +38,7 @@ export async function addSubscriber(env: Env, email: string): Promise<SubscribeR
     if (existing.length > 0) {
         // Already subscribed, ensure active
         await db.update(schema.subscribers)
-            .set({ status: 'active', updated_at: sql`datetime('now')` })
+            .set({ status: 'active', updated_at: new Date().toISOString() })
             .where(eq(schema.subscribers.email, email));
         return { ok: true };
     }
@@ -70,7 +70,7 @@ export async function unsubscribe(env: Env, token: string): Promise<boolean> {
 
     const { db } = client;
     const result = await db.update(schema.subscribers)
-        .set({ status: 'unsubscribed', updated_at: sql`datetime('now')` })
+        .set({ status: 'unsubscribed', updated_at: new Date().toISOString() })
         .where(eq(schema.subscribers.token, token))
         .returning({ id: schema.subscribers.id });
 
