@@ -481,7 +481,7 @@ export async function listMedia(
             orderBy = desc(schema.media.likes);
             break;
         case 'views':
-            orderBy = desc(schema.media.view_count);
+            orderBy = sql`COALESCE(${schema.media.view_count}, 0) DESC`;
             break;
         default:
             orderBy = desc(schema.media.created_at);
