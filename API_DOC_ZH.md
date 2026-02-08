@@ -52,7 +52,7 @@ Query 参数：
 - `tag`: 标签
 - `page`
 - `pageSize`
-- `sort`: `date | likes`（默认 `date`）
+- `sort`: `date | likes | views`（默认 `date`）
 - `orientation`: `landscape | portrait | square`
 
 排序规则：
@@ -90,6 +90,7 @@ Query 参数：
       "category_ids": ["..."],
       "tags": ["..."],
       "likes": 0,
+      "view_count": 0,
       "liked": false
     }
   ],
@@ -157,10 +158,24 @@ Query 参数：
     "categories": [{ "id": "...", "name": "...", "slug": "..." }],
     "tags": ["tag1", "tag2"],
     "likes": 10,
+    "view_count": 120,
     "liked": false,
     "created_at": "2026-02-07T12:34:56.789Z"
   }
 }
+```
+
+### 照片浏览量
+`GET /media/{id}/view`
+`POST /media/{id}/view`
+
+- `GET`：获取当前浏览量。
+- `POST`：记录一次浏览（会忽略常见爬虫 UA；当配置 KV 时，5 分钟内同 IP 重复浏览会去重）。
+
+响应：
+
+```json
+{ "ok": true, "views": 123 }
 ```
 
 ### 照片点赞
@@ -383,7 +398,8 @@ Body：
 ### 媒体
 
 - `GET /admin/media/list`
-  - Query: `q, category, tag, page, pageSize`
+  - Query: `q, category, tag, page, pageSize, sort`
+  - `sort`: `date | date_asc | name | likes | views`
 
 - `GET /admin/media/{id}`
 - `PUT /admin/media/{id}`

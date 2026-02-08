@@ -17,7 +17,7 @@ interface UseMediaListReturn {
     refetch: () => void;
     updateMedia: (id: string, updates: Partial<Media>) => void;
     hasMore: boolean;
-    sort: 'date' | 'likes';
+    sort: 'date' | 'likes' | 'views';
     orientation?: 'landscape' | 'portrait' | 'square';
 }
 
@@ -26,7 +26,7 @@ type InitialMediaData = {
     total: number;
     page?: number;
     pageSize?: number;
-    sort?: 'date' | 'likes';
+    sort?: 'date' | 'likes' | 'views';
     orientation?: 'landscape' | 'portrait' | 'square';
 };
 

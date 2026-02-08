@@ -108,8 +108,10 @@ async function listMediaFromDb(
 
     // Get paginated results
     const orderBy = sort === 'likes'
-        ? desc(schema.media.likes)
-        : [desc(schema.media.datetime_original), desc(schema.media.created_at)];
+        ? [sql`COALESCE(${schema.media.likes}, 0) DESC`, desc(schema.media.created_at)]
+        : sort === 'views'
+            ? [sql`COALESCE(${schema.media.view_count}, 0) DESC`, desc(schema.media.created_at)]
+            : [desc(schema.media.datetime_original), desc(schema.media.created_at)];
 
         const results = await db
             .select({
@@ -136,6 +138,7 @@ async function listMediaFromDb(
             datetime_original: schema.media.datetime_original,
             location_name: schema.media.location_name,
             likes: schema.media.likes,
+            view_count: schema.media.view_count,
         })
         .from(schema.media)
         .where(whereClause)
@@ -218,6 +221,7 @@ async function listMediaFromDb(
             category_ids: categories.map(c => c.id),
             tags,
             likes: m.likes || 0,
+            view_count: m.view_count || 0,
             liked: false,
         } as Media;
     });

@@ -221,6 +221,40 @@ export async function unlikeMedia(id: string): Promise<LikeResponse> {
     return response.json();
 }
 
+export async function recordMediaView(id: string): Promise<{ ok: boolean; views: number }> {
+    const url = `${API_BASE_URL}/media/${id}/view`;
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        if (!response.ok) return { ok: false, views: 0 };
+        return response.json();
+    } catch (error) {
+        console.error("Failed to record media view", error);
+        return { ok: false, views: 0 };
+    }
+}
+
+export async function getMediaViewCount(id: string): Promise<{ ok: boolean; views: number }> {
+    const url = `${API_BASE_URL}/media/${id}/view`;
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        if (!response.ok) return { ok: false, views: 0 };
+        return response.json();
+    } catch (error) {
+        console.error("Failed to fetch media view count", error);
+        return { ok: false, views: 0 };
+    }
+}
+
 export async function getAlbumLikeInfo(id: string): Promise<LikeResponse> {
     const url = `${API_BASE_URL}/albums/${id}/like`;
     const response = await fetch(url, {

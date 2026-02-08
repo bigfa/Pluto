@@ -108,6 +108,7 @@ export async function GET(
             category_ids: categories.map((c: any) => c.id),
             tags,
             likes: row.likes || 0,
+            view_count: row.view_count || 0,
             liked,
             created_at: row.created_at,
             updated_at: row.updated_at || undefined,

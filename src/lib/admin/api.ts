@@ -108,6 +108,7 @@ export interface MediaItem {
     categories?: { id: string; name: string; slug: string }[];
     tags?: string[];
     visibility?: string;
+    view_count?: number;
     created_at: string;
 }
 
@@ -158,6 +159,7 @@ export async function listMedia(params: {
     tag?: string;
     page?: number;
     pageSize?: number;
+    sort?: 'date' | 'date_asc' | 'name' | 'likes' | 'views';
 }): Promise<MediaListResponse> {
     const searchParams = new URLSearchParams();
     if (params.q) searchParams.set('q', params.q);
@@ -165,6 +167,7 @@ export async function listMedia(params: {
     if (params.tag) searchParams.set('tag', params.tag);
     if (params.page) searchParams.set('page', String(params.page));
     if (params.pageSize) searchParams.set('pageSize', String(params.pageSize));
+    if (params.sort) searchParams.set('sort', params.sort);
 
     return apiFetch(`/api/admin/media/list?${searchParams}`);
 }

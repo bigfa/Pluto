@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS `media` (
     `created_at` TEXT NOT NULL,
     `updated_at` TEXT NOT NULL,
     `likes` INTEGER,
+    `view_count` INTEGER,
     `visibility` TEXT
 );
 
@@ -167,6 +168,7 @@ CREATE INDEX IF NOT EXISTS `idx_media_created_at` ON `media` (`created_at`);
 CREATE INDEX IF NOT EXISTS `idx_media_visibility` ON `media` (`visibility`);
 CREATE INDEX IF NOT EXISTS `idx_media_provider` ON `media` (`provider`);
 CREATE INDEX IF NOT EXISTS `idx_media_file_hash` ON `media` (`file_hash`);
+CREATE INDEX IF NOT EXISTS `idx_media_view_count` ON `media` (`view_count`);
 
 -- Media Categories
 CREATE UNIQUE INDEX IF NOT EXISTS `idx_media_categories_slug` ON `media_categories` (`slug`);

@@ -35,6 +35,7 @@ export default function MediaListView({ media, onEdit, onDelete, onCopy }: Media
                         <th className="py-3 px-4 text-left font-medium">{t('admin_media_table_fileinfo')}</th>
                         <th className="py-3 px-4 text-left font-medium">{t('admin_media_table_exif')}</th>
                         <th className="py-3 px-4 text-left font-medium">{t('admin_media_table_category_tag')}</th>
+                        <th className="py-3 px-4 text-left font-medium w-[90px]">{t('admin_media_table_views')}</th>
                         <th className="py-3 px-4 text-left font-medium w-[100px]">{t('admin_media_table_visibility')}</th>
                         <th className="py-3 px-4 text-left font-medium w-[120px]">{t('admin_media_table_actions')}</th>
                     </tr>
@@ -101,6 +102,9 @@ export default function MediaListView({ media, onEdit, onDelete, onCopy }: Media
                                         )}
                                     </div>
                                 </div>
+                            </td>
+                            <td className="py-3 px-4">
+                                <span className="text-xs font-medium">{item.view_count || 0}</span>
                             </td>
                             <td className="py-3 px-4">
                                 {item.visibility === 'private' ? (

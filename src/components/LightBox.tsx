@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Media, parseExifJson, getExifDisplayValues } from '@/types/media';
 import LikeButton from './LikeButton';
+import { recordMediaView } from '@/lib/api';
+import { t } from '@/lib/i18n';
 import styles from './LightBox.module.scss';
 
 interface LightBoxProps {
@@ -25,6 +27,10 @@ export default function LightBox({
     hasNext = false,
     onLike
 }: LightBoxProps) {
+    const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
+    const lastTrackedMediaId = useRef<string | null>(null);
+    const mediaId = media?.id;
+
     const handleLike = async () => {
         if (onLike && media) {
             return onLike(media);
@@ -53,6 +59,29 @@ export default function LightBox({
         };
     }, [media, handleKeyDown]);
 
+    useEffect(() => {
+        if (!mediaId) {
+            lastTrackedMediaId.current = null;
+            return;
+        }
+        if (lastTrackedMediaId.current === mediaId) return;
+
+        lastTrackedMediaId.current = mediaId;
+        let cancelled = false;
+        recordMediaView(mediaId).then((result) => {
+            if (!cancelled && result.ok) {
+                setViewCounts((prev) => {
+                    if (prev[mediaId] === result.views) return prev;
+                    return { ...prev, [mediaId]: result.views };
+                });
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [mediaId]);
+
     if (!media) return null;
 
     const formatFileSize = (bytes: number): string => {
@@ -69,6 +98,9 @@ export default function LightBox({
     const aperture = media.aperture || exifValues?.aperture;
     const shutter = media.shutter_speed || exifValues?.shutter;
     const iso = media.iso || exifValues?.iso;
+    const viewCount = mediaId
+        ? (viewCounts[mediaId] ?? media.view_count ?? 0)
+        : 0;
 
     return (
         <div className={styles.overlay} onClick={onClose}>
@@ -82,6 +114,16 @@ export default function LightBox({
                         onToggle={handleLike}
                         size="large"
                     />
+                </div>
+
+                <div className={styles.metricRow}>
+                    <span className={styles.metricIcon} aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </span>
+                    <span className={styles.metricValue}>{t('lightbox_views', { count: viewCount })}</span>
                 </div>
 
                 {/* Camera info */}

@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
             tag: searchParams.get('tag') || undefined,
             page: searchParams.get('page') ? parseInt(searchParams.get('page')!) : 1,
             pageSize: searchParams.get('pageSize') ? parseInt(searchParams.get('pageSize')!) : 20,
-            sort: (searchParams.get('sort') as 'date' | 'likes') || 'date',
+            sort: (searchParams.get('sort') as 'date' | 'likes' | 'views') || 'date',
             orientation: (searchParams.get('orientation') as 'landscape' | 'portrait' | 'square') || undefined,
         };
 
@@ -111,8 +111,10 @@ export async function GET(request: NextRequest) {
 
         // Get paginated results
         const orderBy = sort === 'likes'
-            ? desc(schema.media.likes)
-            : [desc(schema.media.datetime_original), desc(schema.media.created_at)];
+            ? [sql`COALESCE(${schema.media.likes}, 0) DESC`, desc(schema.media.created_at)]
+            : sort === 'views'
+                ? [sql`COALESCE(${schema.media.view_count}, 0) DESC`, desc(schema.media.created_at)]
+                : [desc(schema.media.datetime_original), desc(schema.media.created_at)];
 
         const results = await db
             .select({
@@ -139,6 +141,7 @@ export async function GET(request: NextRequest) {
                 datetime_original: schema.media.datetime_original,
                 location_name: schema.media.location_name,
                 likes: schema.media.likes,
+                view_count: schema.media.view_count,
             })
             .from(schema.media)
             .where(whereClause)
@@ -227,6 +230,7 @@ export async function GET(request: NextRequest) {
                 category_ids: categories.map((c) => c.id),
                 tags,
                 likes: m.likes || 0,
+                view_count: m.view_count || 0,
                 liked: isLikedByCookie(m.id),
             } as Media;
         });
