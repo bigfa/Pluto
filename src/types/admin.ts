@@ -73,6 +73,7 @@ export interface MediaFile {
     gps_lon?: number;
     location_name?: string;
     likes?: number;
+    view_count?: number;
     visibility?: string;
     tags?: string[];
     categories?: { id: string; name: string }[];

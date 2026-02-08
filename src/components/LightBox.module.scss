@@ -36,6 +36,25 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
+.metricRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: -0.5rem;
+}
+
+.metricIcon {
+    display: inline-flex;
+    align-items: center;
+    color: #666;
+}
+
+.metricValue {
+    font-size: 0.875rem;
+    color: #555;
+    font-weight: 500;
+}
+
 .sidebarSection {
     display: flex;
     flex-direction: column;

@@ -32,6 +32,7 @@ export default function MediaPage() {
     const [search, setSearch] = useState('');
     const [filterCategory, setFilterCategory] = useState('');
     const [filterTag, setFilterTag] = useState('');
+    const [sort, setSort] = useState<'date' | 'likes' | 'views'>('date');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
         if (typeof window === 'undefined') return 'grid';
         const stored = window.localStorage.getItem('admin_media_view_mode');
@@ -59,6 +60,7 @@ export default function MediaPage() {
                 q: search || undefined,
                 category: filterCategory || undefined,
                 tag: filterTag || undefined,
+                sort,
             });
             setMedia(res.results);
             setTotalPages(res.totalPages);
@@ -69,7 +71,7 @@ export default function MediaPage() {
             toast.error(t('admin_media_load_failed'));
         }
         setLoading(false);
-    }, [search, filterCategory, filterTag]);
+    }, [search, filterCategory, filterTag, sort]);
 
     const loadCategories = useCallback(async () => {
         try {
@@ -174,6 +176,8 @@ export default function MediaPage() {
                         setFilterCategory={setFilterCategory}
                         filterTag={filterTag}
                         setFilterTag={setFilterTag}
+                        sort={sort}
+                        setSort={setSort}
                         onSearch={handleSearch}
                         categories={categories}
                         tags={tags}

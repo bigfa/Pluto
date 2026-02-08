@@ -52,7 +52,7 @@ Query Parameters:
 - `tag`: tag string
 - `page`: number
 - `pageSize`: number
-- `sort`: `date | likes` (default `date`)
+- `sort`: `date | likes | views` (default `date`)
 - `orientation`: `landscape | portrait | square`
 
 Sorting:
@@ -90,6 +90,7 @@ Response:
       "category_ids": ["..."],
       "tags": ["..."],
       "likes": 0,
+      "view_count": 0,
       "liked": false
     }
   ],
@@ -157,10 +158,24 @@ Response:
     "categories": [{ "id": "...", "name": "...", "slug": "..." }],
     "tags": ["tag1", "tag2"],
     "likes": 10,
+    "view_count": 120,
     "liked": false,
     "created_at": "2026-02-07T12:34:56.789Z"
   }
 }
+```
+
+### Media Views
+`GET /media/{id}/view`
+`POST /media/{id}/view`
+
+- `GET`: fetches current view count.
+- `POST`: records a view (bot user-agents are ignored; repeat views within 5 minutes are deduplicated when KV is configured).
+
+Response:
+
+```json
+{ "ok": true, "views": 123 }
 ```
 
 ### Media Likes
@@ -383,7 +398,8 @@ All admin endpoints require the `photos_admin` session cookie.
 ### Media
 
 - `GET /admin/media/list`
-  - Query: `q, category, tag, page, pageSize`
+  - Query: `q, category, tag, page, pageSize, sort`
+  - `sort`: `date | date_asc | name | likes | views`
 
 - `GET /admin/media/{id}`
 - `PUT /admin/media/{id}`

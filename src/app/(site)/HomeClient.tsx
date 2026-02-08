@@ -67,7 +67,7 @@ function HomeContent({
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [setParams]);
 
-    const handleSortChange = useCallback((newSort: 'date' | 'likes') => {
+    const handleSortChange = useCallback((newSort: 'date' | 'likes' | 'views') => {
         // Optimistic check? No, sort comes from useMediaList which updates via setParams
         setParams({ sort: newSort, page: 1 });
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -256,6 +256,15 @@ function HomeContent({
                                     >
                                         {t('home_popular')}
                                     </button>
+                                    <button
+                                        onClick={() => handleSortChange('views')}
+                                        className={`flex-1 sm:flex-none px-3 py-1.5 text-sm font-medium rounded-md transition-all ${sort === 'views'
+                                            ? 'bg-background text-foreground shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                            }`}
+                                    >
+                                        {t('home_views')}
+                                    </button>
                                 </div>
 
                                 <div className="flex bg-muted p-1 rounded-lg overflow-x-auto max-w-full sm:max-w-none no-scrollbar">
@@ -325,7 +334,7 @@ function HomeContent({
                             onLike={SITE_CONFIG.features.enableLikes ? handleLike : undefined}
                             masonry={true}
                         />
-                    ) : sort === 'likes' ? (
+                    ) : sort === 'likes' || sort === 'views' ? (
                         <MediaGrid
                             media={media || []}
                             loading={false}

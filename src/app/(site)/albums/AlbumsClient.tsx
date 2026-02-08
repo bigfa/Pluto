@@ -8,8 +8,6 @@ import AlbumCard from '@/components/AlbumCard';
 import AlbumCategoryTabs from '@/components/AlbumCategoryTabs';
 import Pagination from '@/components/Pagination';
 import styles from './page.module.scss';
-import Link from 'next/link';
-import RssIcon from '@/components/RssIcon';
 import { t } from '@/lib/i18n';
 import { useSearchParams } from 'next/navigation';
 

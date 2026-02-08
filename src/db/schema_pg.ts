@@ -31,6 +31,7 @@ export const media = pgTable("media", {
     created_at: text("created_at").notNull(),
     updated_at: text("updated_at").notNull(),
     likes: integer("likes"),
+    view_count: integer("view_count"),
     visibility: text("visibility"),
 });
 

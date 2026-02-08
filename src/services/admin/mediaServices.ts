@@ -342,6 +342,7 @@ function mapRowToMediaFile(
         gps_lon: row.gps_lon ?? undefined,
         location_name: row.location_name || undefined,
         likes: row.likes || 0,
+        view_count: row.view_count || 0,
         visibility: row.visibility || 'public',
         tags,
         categories,
@@ -367,7 +368,7 @@ interface ListMediaOptions {
     tag?: string;
     visibility?: string;
     orientation?: 'landscape' | 'portrait' | 'square';
-    sort?: 'date' | 'date_asc' | 'name' | 'likes';
+    sort?: 'date' | 'date_asc' | 'name' | 'likes' | 'views';
 }
 
 /**
@@ -479,6 +480,9 @@ export async function listMedia(
         case 'likes':
             orderBy = desc(schema.media.likes);
             break;
+        case 'views':
+            orderBy = sql`COALESCE(${schema.media.view_count}, 0) DESC`;
+            break;
         default:
             orderBy = desc(schema.media.created_at);
     }
@@ -570,6 +574,7 @@ export async function createMedia(
         location_name: data.location_name || null,
         visibility: data.visibility || 'public',
         likes: 0,
+        view_count: 0,
         created_at: data.created_at || now,
         updated_at: data.updated_at || now,
     });

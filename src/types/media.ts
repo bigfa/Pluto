@@ -66,6 +66,7 @@ export interface Media {
     gps_lat?: number | null;
     gps_lon?: number | null;
     updated_at?: string | null;
+    view_count?: number;
 }
 
 export interface MediaListResponse {
@@ -89,7 +90,7 @@ export interface MediaListParams {
     createdTo?: string;
     page?: number;
     pageSize?: number;
-    sort?: 'date' | 'likes';
+    sort?: 'date' | 'likes' | 'views';
     orientation?: 'landscape' | 'portrait' | 'square';
 }
 
