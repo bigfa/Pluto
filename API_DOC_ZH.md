@@ -481,6 +481,13 @@ Body：
 - `POST /admin/newsletters`
   - 创建: `{ subject, content, type }`
   - 发送: `{ action: "send", id: "newsletterId" }`
+  - 发送成功响应:
+    - `{ ok: true, sent, total, failed, failedRecipients? }`
+  - 发送失败响应:
+    - `{ ok: false, code, error, sent, total, failed, failedRecipients? }`
+  - 常见发送错误码:
+    - `NOT_FOUND`（newsletter 不存在或已发送）
+    - `SERVER_ERROR`（邮件服务配置或发送异常）
 
 ### 订阅用户
 

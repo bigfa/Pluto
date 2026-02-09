@@ -106,13 +106,25 @@ export default function NewslettersPage() {
             // Then send it
             const sendRes = await sendNewsletterApi(createRes.newsletter.id);
             if (sendRes.ok) {
-                toast.success(t('admin_newsletters_send_success', { count: sendRes.sent }));
+                if (sendRes.total === 0) {
+                    toast.info(t('admin_newsletters_send_none'));
+                } else if (sendRes.failed > 0) {
+                    toast.warning(t('admin_newsletters_send_partial', {
+                        sent: sendRes.sent,
+                        total: sendRes.total,
+                        failed: sendRes.failed,
+                    }));
+                } else {
+                    toast.success(t('admin_newsletters_send_success', { count: sendRes.sent }));
+                }
                 setOpen(false);
                 setSubject('');
                 setContent('');
                 loadData();
             } else {
-                toast.error(t('admin_newsletters_send_failed'));
+                toast.error(t('admin_newsletters_send_failed_with_error', {
+                    error: sendRes.error || t('admin_newsletters_send_failed')
+                }));
             }
         } catch (e) {
             toast.error(t('admin_newsletters_send_failed_with_error', { error: String(e) }));

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
-import { sql, eq, or } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getEnv } from "@/lib/env";
 import { getDb } from "@/db/client";
 import type { Category } from "@/types/media";
@@ -22,12 +22,7 @@ export async function GET() {
         const categories = await db
             .select()
             .from(schema.mediaCategories)
-            .where(
-                or(
-                    eq(schema.mediaCategories.show_in_frontend, 1),
-                    sql`${schema.mediaCategories.show_in_frontend} IS NULL`
-                )
-            )
+            .where(eq(schema.mediaCategories.show_in_frontend, 1))
             .orderBy(schema.mediaCategories.display_order);
 
         const countRows = await db

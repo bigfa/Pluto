@@ -481,6 +481,13 @@ All admin endpoints require the `photos_admin` session cookie.
 - `POST /admin/newsletters`
   - Create: `{ subject, content, type }`
   - Send: `{ action: "send", id: "newsletterId" }`
+  - Send success response:
+    - `{ ok: true, sent, total, failed, failedRecipients? }`
+  - Send error response:
+    - `{ ok: false, code, error, sent, total, failed, failedRecipients? }`
+  - Common send error codes:
+    - `NOT_FOUND` (newsletter not found / already sent)
+    - `SERVER_ERROR` (mail service/configuration/sending failure)
 
 ### Subscribers
 

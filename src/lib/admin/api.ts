@@ -476,9 +476,36 @@ export async function createNewsletter(data: { subject: string; content: string;
     });
 }
 
-export async function sendNewsletter(id: string): Promise<{ ok: boolean; sent: number }> {
-    return apiFetch('/api/admin/newsletters', {
-        method: 'POST',
-        body: JSON.stringify({ action: 'send', id }),
-    });
+export interface SendNewsletterResponse {
+    ok: boolean;
+    sent: number;
+    total: number;
+    failed: number;
+    error?: string;
+    code?: string;
+    failedRecipients?: string[];
+}
+
+export async function sendNewsletter(id: string): Promise<SendNewsletterResponse> {
+    try {
+        return await apiFetch<SendNewsletterResponse>('/api/admin/newsletters', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'send', id }),
+        });
+    } catch (error) {
+        const apiErr = error as ApiError;
+        const body = (apiErr.body || {}) as Partial<SendNewsletterResponse> & { error?: string; code?: string };
+
+        return {
+            ok: false,
+            sent: Number(body.sent || 0),
+            total: Number(body.total || 0),
+            failed: Number(body.failed || 0),
+            error: typeof body.error === 'string' ? body.error : 'Send failed',
+            code: typeof body.code === 'string' ? body.code : 'SERVER_ERROR',
+            failedRecipients: Array.isArray(body.failedRecipients)
+                ? body.failedRecipients.filter((item): item is string => typeof item === 'string')
+                : undefined,
+        };
+    }
 }
