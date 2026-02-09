@@ -12,7 +12,7 @@ export async function requireAdmin(
         return {
             ok: false,
             response: NextResponse.json(
-                { ok: false, error: 'SESSION_SECRET is not configured' },
+                { ok: false, error: 'SESSION_SECRET is not configured', code: 'SERVER_ERROR' },
                 { status: 500 }
             ),
         };
@@ -25,7 +25,7 @@ export async function requireAdmin(
         return {
             ok: false,
             response: NextResponse.json(
-                { ok: false, error: 'Unauthorized' },
+                { ok: false, error: 'Unauthorized', code: 'UNAUTHORIZED' },
                 { status: 401 }
             ),
         };
@@ -36,7 +36,7 @@ export async function requireAdmin(
         return {
             ok: false,
             response: NextResponse.json(
-                { ok: false, error: 'Unauthorized' },
+                { ok: false, error: 'Unauthorized', code: 'UNAUTHORIZED' },
                 { status: 401 }
             ),
         };

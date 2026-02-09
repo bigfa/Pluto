@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getEnv } from '@/lib/env';
 import { getAlbumComments, createAlbumComment, type AlbumComment } from '@/services/albumCommentServices';
 import { parseCookie, cookieName, verifySessionToken } from '@/lib/admin/session';
+import { getDb } from '@/db/client';
 import type { Comment } from '@/types/comment';
 
 // Remove runtime = 'edge' to support DB connections
@@ -23,52 +24,69 @@ function albumCommentToComment(ac: AlbumComment): Comment {
     };
 }
 
+async function isAdminRequest(
+    request: NextRequest,
+    sessionSecret?: string
+): Promise<{ isAdmin: boolean; cookies: Record<string, string> }> {
+    const cookies = parseCookie(request.headers.get('cookie'));
+    const sessionToken = cookies[cookieName()];
+    if (!sessionToken || !sessionSecret) {
+        return { isAdmin: false, cookies };
+    }
+
+    const result = await verifySessionToken(sessionSecret, sessionToken);
+    return { isAdmin: result.ok, cookies };
+}
+
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
     const env = await getEnv();
-
-    // Check if user is admin
-    const cookies = parseCookie(request.headers.get('cookie'));
-    const sessionToken = cookies[cookieName()];
-    let isAdmin = false;
-
-    if (sessionToken && env.SESSION_SECRET) {
-        const result = await verifySessionToken(env.SESSION_SECRET, sessionToken);
-        isAdmin = result.ok;
+    const client = getDb(env);
+    if (!client) {
+        return NextResponse.json({ ok: false, error: 'Database not available', code: 'SERVER_ERROR' }, { status: 500 });
     }
 
-    // Get user's pending comment IDs from cookie
+    const { isAdmin, cookies } = await isAdminRequest(request, env.SESSION_SECRET);
+
     const userPendingIds: string[] = [];
-    const pendingCookie = cookies[PENDING_COMMENTS_COOKIE];
-    if (pendingCookie) {
+    const pendingCookieValue = cookies[PENDING_COMMENTS_COOKIE];
+    if (pendingCookieValue) {
         try {
-            userPendingIds.push(...JSON.parse(pendingCookie));
+            const parsedPending = JSON.parse(pendingCookieValue);
+            if (Array.isArray(parsedPending)) {
+                userPendingIds.push(...parsedPending.filter((value): value is string => typeof value === 'string'));
+            }
         } catch { /* ignore parse errors */ }
     }
 
-    // Admin sees all, others see only approved + their own pending
-    const allComments = await getAlbumComments(env, id, isAdmin);
+    try {
+        // Admin sees all, others see only approved + their own pending
+        const allComments = await getAlbumComments(env, id, isAdmin);
 
-    let visibleComments: AlbumComment[];
-    if (isAdmin) {
-        visibleComments = allComments;
-    } else {
-        // Show approved comments + user's own pending comments
-        visibleComments = allComments.filter(
-            c => c.status === 'approved' || userPendingIds.includes(c.id)
-        );
+        let visibleComments: AlbumComment[];
+        if (isAdmin) {
+            visibleComments = allComments;
+        } else {
+            // Show approved comments + user's own pending comments
+            visibleComments = allComments.filter(
+                c => c.status === 'approved' || userPendingIds.includes(c.id)
+            );
+        }
+
+        const comments: Comment[] = visibleComments.map(albumCommentToComment);
+
+        return NextResponse.json({
+            ok: true,
+            comments,
+            isAdmin,
+        });
+    } catch (e) {
+        console.error('Failed to fetch comments', e);
+        return NextResponse.json({ ok: false, error: 'Failed to fetch comments', code: 'SERVER_ERROR' }, { status: 500 });
     }
-
-    const comments: Comment[] = visibleComments.map(albumCommentToComment);
-
-    return NextResponse.json({
-        ok: true,
-        comments,
-        isAdmin,
-    });
 }
 
 export async function POST(
@@ -77,41 +95,53 @@ export async function POST(
 ) {
     const { id } = await params;
     const env = await getEnv();
-    const data = await request.json() as {
+    const client = getDb(env);
+    if (!client) {
+        return NextResponse.json({ ok: false, error: 'Database not available', code: 'SERVER_ERROR' }, { status: 500 });
+    }
+
+    let data: {
         author_name?: string;
         content: string;
         author_email?: string;
         author_url?: string;
         parent_id?: string;
     };
-    const ip = request.headers.get('cf-connecting-ip') || '127.0.0.1';
-
-    // Check if user is admin
-    const cookies = parseCookie(request.headers.get('cookie'));
-    const sessionToken = cookies[cookieName()];
-    let isAdmin = false;
-
-    if (sessionToken && env.SESSION_SECRET) {
-        const result = await verifySessionToken(env.SESSION_SECRET, sessionToken);
-        isAdmin = result.ok;
+    try {
+        data = await request.json() as {
+            author_name?: string;
+            content: string;
+            author_email?: string;
+            author_url?: string;
+            parent_id?: string;
+        };
+    } catch {
+        return NextResponse.json({ ok: false, error: 'Invalid JSON body', code: 'VALIDATION_ERROR' }, { status: 400 });
     }
+
+    const ip = request.headers.get('cf-connecting-ip') || '127.0.0.1';
+    const { isAdmin, cookies } = await isAdminRequest(request, env.SESSION_SECRET);
 
     // Basic validation - admin can skip name/email
-    if (!isAdmin && (!data.author_name || !data.author_email)) {
-        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    const authorName = data.author_name?.trim();
+    const authorEmail = data.author_email?.trim();
+    const content = data.content?.trim();
+
+    if (!isAdmin && (!authorName || !authorEmail)) {
+        return NextResponse.json({ ok: false, error: "Missing required fields", code: 'VALIDATION_ERROR' }, { status: 400 });
     }
-    if (!data.content) {
-        return NextResponse.json({ error: "Missing content" }, { status: 400 });
+    if (!content) {
+        return NextResponse.json({ ok: false, error: "Missing content", code: 'VALIDATION_ERROR' }, { status: 400 });
     }
 
     try {
         const comment = await createAlbumComment(env, {
             album_id: id,
-            author_name: isAdmin ? (data.author_name || 'Admin') : data.author_name!,
-            author_email: isAdmin ? (data.author_email || 'admin@local') : data.author_email!,
+            author_name: isAdmin ? (authorName || 'Admin') : authorName!,
+            author_email: isAdmin ? (authorEmail || 'admin@local') : authorEmail!,
             author_url: data.author_url,
             author_ip: ip,
-            content: data.content,
+            content,
             parent_id: data.parent_id,
             status: isAdmin ? 'approved' : 'pending', // Admin comments are auto-approved
         });
@@ -149,6 +179,6 @@ export async function POST(
         return response;
     } catch (e) {
         console.error('Failed to create comment', e);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ ok: false, error: "Failed to create comment", code: 'SERVER_ERROR' }, { status: 500 });
     }
 }
