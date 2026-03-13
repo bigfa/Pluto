@@ -38,6 +38,7 @@ export default function AlbumDetailPage() {
     const [slug, setSlug] = useState('');
     const [tags, setTags] = useState('');
     const [password, setPassword] = useState('');
+    const [clearPassword, setClearPassword] = useState(false);
     const [status, setStatus] = useState<'draft' | 'published'>('published');
     const [coverMediaId, setCoverMediaId] = useState('');
     const [coverPreview, setCoverPreview] = useState<{ url: string; url_thumb?: string } | null>(null);
@@ -61,6 +62,7 @@ export default function AlbumDetailPage() {
 
     // Remove media confirm state
     const [removeMediaIds, setRemoveMediaIds] = useState<string[]>([]);
+    const [showClearPasswordConfirm, setShowClearPasswordConfirm] = useState(false);
 
     // OTP state
     const [otp, setOtp] = useState('');
@@ -77,6 +79,7 @@ export default function AlbumDetailPage() {
             setSlug(res.data.slug || '');
             setTags(res.data.tags?.join(', ') || '');
             setPassword('');
+            setClearPassword(false);
             setStatus(res.data.status || 'published');
             setCoverMediaId(res.data.cover_media_id || '');
             setCategoryIds(res.data.category_ids || []);
@@ -128,12 +131,15 @@ export default function AlbumDetailPage() {
         setSaving(true);
         try {
             const tagsArray = tags.split(',').map(t => t.trim()).filter(Boolean);
+            const nextPassword = clearPassword
+                ? null
+                : (password.trim() || undefined);
             await updateAlbum(albumId, {
                 title: title.trim(),
                 description: description.trim() || undefined,
                 slug: slug.trim() || undefined,
                 tags: tagsArray.length > 0 ? tagsArray : [],
-                password: password.trim() || undefined,
+                password: nextPassword,
                 status,
                 cover_media_id: coverMediaId || undefined,
                 category_ids: categoryIds,
@@ -204,6 +210,12 @@ export default function AlbumDetailPage() {
             navigator.clipboard.writeText(otp);
             toast.success(t('common_copied'));
         }
+    };
+
+    const handleClearPassword = () => {
+        setPassword('');
+        setClearPassword(true);
+        setShowClearPasswordConfirm(false);
     };
 
     if (loading) {
@@ -369,10 +381,32 @@ export default function AlbumDetailPage() {
                             </div>
                             <div>
                                 <Label>{t('admin_album_field_password')}</Label>
-                                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                                <Input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        if (clearPassword) {
+                                            setClearPassword(false);
+                                        }
+                                    }}
                                     placeholder={t('admin_album_detail_password_hint')} className="mt-1" />
                                 {album.is_protected && (
-                                    <p className="text-xs text-muted-foreground mt-1">{t('admin_album_detail_password_enabled')}</p>
+                                    <div className="mt-2 flex items-center justify-between gap-3">
+                                        <p className={`text-xs ${clearPassword ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                                            {clearPassword
+                                                ? t('admin_album_detail_password_clear_pending')
+                                                : t('admin_album_detail_password_enabled')}
+                                        </p>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setShowClearPasswordConfirm(true)}
+                                        >
+                                            {t('admin_album_detail_password_clear')}
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
                         </CardContent>
@@ -494,6 +528,16 @@ export default function AlbumDetailPage() {
                 description={t('admin_album_detail_remove_desc')}
                 onConfirm={handleRemoveMedia}
                 confirmText={t('common_remove')}
+                destructive
+            />
+
+            <ConfirmDialog
+                open={showClearPasswordConfirm}
+                onOpenChange={setShowClearPasswordConfirm}
+                title={t('admin_album_detail_password_clear_title')}
+                description={t('admin_album_detail_password_clear_desc')}
+                onConfirm={handleClearPassword}
+                confirmText={t('common_confirm')}
                 destructive
             />
         </div>

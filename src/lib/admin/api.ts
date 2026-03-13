@@ -361,7 +361,7 @@ export async function createAlbum(data: { title: string; description?: string; c
     });
 }
 
-export async function updateAlbum(id: string, data: { title?: string; description?: string; cover_media_id?: string; slug?: string; tags?: string[]; category_ids?: string[]; password?: string; status?: 'draft' | 'published' }): Promise<{ ok: boolean; data: AlbumItem }> {
+export async function updateAlbum(id: string, data: { title?: string; description?: string; cover_media_id?: string; slug?: string; tags?: string[]; category_ids?: string[]; password?: string | null; status?: 'draft' | 'published' }): Promise<{ ok: boolean; data: AlbumItem }> {
     return apiFetch(`/api/admin/albums/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data),

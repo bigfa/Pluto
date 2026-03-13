@@ -15,10 +15,10 @@ import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-    listAlbums, createAlbum, deleteAlbum as deleteAlbumApi,
+    listAlbums, createAlbum, updateAlbum, deleteAlbum as deleteAlbumApi,
     listAlbumCategories, type AlbumItem, type AlbumCategory,
 } from '@/lib/admin/api';
-import { Plus, Trash2, Edit, ChevronLeft, ChevronRight, Lock, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Edit, ChevronLeft, ChevronRight, Lock, Unlock, Image as ImageIcon } from 'lucide-react';
 import { toast } from "sonner";
 import { t } from '@/lib/i18n';
 import { MultiSelect } from '@/components/ui/multi-select';
@@ -46,6 +46,7 @@ export default function AlbumsPage() {
 
     // Delete confirm state
     const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [clearPasswordId, setClearPasswordId] = useState<string | null>(null);
 
     const loadAlbums = useCallback(async (p: number) => {
         setLoading(true);
@@ -123,6 +124,19 @@ export default function AlbumsPage() {
         } catch (e) {
             console.error('Failed to delete album:', e);
             toast.error(t('admin_albums_delete_failed'));
+        }
+    };
+
+    const handleClearPassword = async () => {
+        if (!clearPasswordId) return;
+        try {
+            await updateAlbum(clearPasswordId, { password: null });
+            toast.success(t('admin_album_detail_save_success'));
+            setClearPasswordId(null);
+            loadAlbums(page);
+        } catch (e) {
+            console.error('Failed to clear album password:', e);
+            toast.error(t('admin_album_detail_save_failed'));
         }
     };
 
@@ -223,6 +237,17 @@ export default function AlbumsPage() {
                                             <Edit className="h-3.5 w-3.5 mr-1" /> {t('common_edit')}
                                         </Button>
                                     </Link>
+                                    {album.is_protected && (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => setClearPasswordId(album.id)}
+                                            title={t('admin_album_detail_password_clear')}
+                                        >
+                                            <Unlock className="h-3.5 w-3.5" />
+                                        </Button>
+                                    )}
                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"
                                         onClick={() => setDeleteId(album.id)}>
                                         <Trash2 className="h-3.5 w-3.5" />
@@ -321,6 +346,16 @@ export default function AlbumsPage() {
                 description={t('admin_album_delete_desc')}
                 onConfirm={handleDelete}
                 confirmText={t('common_delete')}
+                destructive
+            />
+
+            <ConfirmDialog
+                open={!!clearPasswordId}
+                onOpenChange={(open) => { if (!open) setClearPasswordId(null); }}
+                title={t('admin_album_detail_password_clear_title')}
+                description={t('admin_album_detail_password_clear_desc')}
+                onConfirm={handleClearPassword}
+                confirmText={t('common_confirm')}
                 destructive
             />
         </div>

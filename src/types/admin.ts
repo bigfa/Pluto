@@ -100,7 +100,7 @@ export interface AlbumUpdate {
     slug?: string;
     tags?: string[];
     category_ids?: string[];
-    password?: string;
+    password?: string | null;
     status?: 'draft' | 'published';
 }
 
