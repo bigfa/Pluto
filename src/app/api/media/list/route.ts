@@ -40,12 +40,7 @@ export async function GET(request: NextRequest) {
         const conditions = [];
 
         // Only show public media
-        conditions.push(
-            or(
-                eq(schema.media.visibility, 'public'),
-                sql`${schema.media.visibility} IS NULL`
-            )
-        );
+        conditions.push(sql`COALESCE(${schema.media.visibility}, 'public') = 'public'`);
 
         // Search query
         if (q) {

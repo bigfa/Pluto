@@ -42,7 +42,7 @@ async function listCategoriesFromDb(
                 )
                 .where(
                     sql`${schema.mediaCategoryLinks.category_id} = ${cat.id} 
-                    AND (${schema.media.visibility} = 'public' OR ${schema.media.visibility} IS NULL)`
+                    AND COALESCE(${schema.media.visibility}, 'public') = 'public'`
                 );
 
             return {
@@ -87,7 +87,7 @@ async function getCategoryBySlugFromDb(
         )
         .where(
             sql`${schema.mediaCategoryLinks.category_id} = ${cat.id}
-            AND (${schema.media.visibility} = 'public' OR ${schema.media.visibility} IS NULL)`
+            AND COALESCE(${schema.media.visibility}, 'public') = 'public'`
         );
 
     return {

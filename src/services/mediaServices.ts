@@ -36,12 +36,7 @@ async function listMediaFromDb(
     const conditions = [];
 
     // Only show public media
-    conditions.push(
-        or(
-            eq(schema.media.visibility, 'public'),
-            sql`${schema.media.visibility} IS NULL`
-        )
-    );
+    conditions.push(sql`COALESCE(${schema.media.visibility}, 'public') = 'public'`);
 
     // Search query
     if (q) {
@@ -254,12 +249,7 @@ async function fetchCategoriesFromDb(
             schema.media,
             eq(schema.mediaCategoryLinks.media_id, schema.media.id)
         )
-        .where(
-            or(
-                eq(schema.media.visibility, 'public'),
-                sql`${schema.media.visibility} IS NULL`
-            )
-        )
+        .where(sql`COALESCE(${schema.media.visibility}, 'public') = 'public'`)
         .groupBy(schema.mediaCategoryLinks.category_id);
 
     const countMap = new Map<string, number>();

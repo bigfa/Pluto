@@ -169,6 +169,9 @@ CREATE INDEX IF NOT EXISTS idx_media_visibility ON media (visibility);
 CREATE INDEX IF NOT EXISTS idx_media_provider ON media (provider);
 CREATE INDEX IF NOT EXISTS idx_media_file_hash ON media (file_hash);
 CREATE INDEX IF NOT EXISTS idx_media_view_count ON media (view_count);
+CREATE INDEX IF NOT EXISTS idx_media_list_date ON media (COALESCE(visibility, 'public'), datetime_original DESC, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_media_list_likes ON media (COALESCE(visibility, 'public'), COALESCE(likes, 0) DESC, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_media_list_views ON media (COALESCE(visibility, 'public'), COALESCE(view_count, 0) DESC, created_at DESC);
 
 -- Media Categories
 CREATE UNIQUE INDEX IF NOT EXISTS idx_media_categories_slug ON media_categories (slug);
@@ -176,10 +179,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_media_categories_slug ON media_categories 
 -- Media Category Links
 CREATE INDEX IF NOT EXISTS idx_media_category_links_media_id ON media_category_links (media_id);
 CREATE INDEX IF NOT EXISTS idx_media_category_links_category_id ON media_category_links (category_id);
+CREATE INDEX IF NOT EXISTS idx_media_category_links_category_media ON media_category_links (category_id, media_id);
 
 -- Media Tags
 CREATE INDEX IF NOT EXISTS idx_media_tags_media_id ON media_tags (media_id);
 CREATE INDEX IF NOT EXISTS idx_media_tags_tag ON media_tags (tag);
+CREATE INDEX IF NOT EXISTS idx_media_tags_tag_media ON media_tags (tag, media_id);
 
 -- Albums
 CREATE INDEX IF NOT EXISTS idx_albums_slug ON albums (slug);
